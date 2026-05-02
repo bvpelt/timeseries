@@ -1,0 +1,1065 @@
+openapi: "3.0.3"
+info:
+  title: "Bitemporal Person-Address-Agreement Service"
+  description: |
+    REST API for managing persons, addresses, and agreements with full
+    bitemporal (valid-time + transaction-time) support as described by
+    Richard Snodgrass.
+
+    ## Time Travel
+    Use `validAt` and `transactionAt` query parameters on any GET endpoint
+    to query the state of an entity at a specific point in the bitemporal
+    plane.
+
+    ## Bitemporal Model
+    - **Valid Time**: When the fact was true in the real world (`validFrom` / `validTo`)
+    - **Transaction Time**: When the fact was recorded in the database (`transactionFrom` / `transactionTo`)
+
+    ## API Key Permissions
+    All requests must include the `X-API-Key` header:
+    - **READ_WRITE**: full access (GET, POST, PUT, DELETE)
+    - **READ**: read-only access (GET only)
+    - **NO_ACCESS**: all requests denied
+  version: "1.0.0"
+  contact:
+    name: "BSoft Development Team"
+
+servers:
+  - url: "http://localhost:8080/api/v1"
+    description: "Local development server"
+  - url: "https://api.example.com/api/v1"
+    description: "Production server"
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: persons
+    description: Person management with bitemporal support
+  - name: addresses
+    description: Address management with bitemporal support
+  - name: agreements
+    description: Agreement management with bitemporal support
+  - name: person-relations
+    description: Person-Address and Person-Agreement relation management
+
+paths:
+
+  # ==================== PERSONS ====================
+  /persons:
+    get:
+      tags: [ persons ]
+      operationId: listPersons
+      summary: List persons at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paginated list of persons
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [ persons ]
+      operationId: createPerson
+      summary: Create a new person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequest'
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /persons/{personId}:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+    get:
+      tags: [ persons ]
+      operationId: getPerson
+      summary: Get a person at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+      responses:
+        '200':
+          description: Person found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [ persons ]
+      operationId: updatePerson
+      summary: Update a person (creates a new transaction-time version)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRequest'
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [ persons ]
+      operationId: terminatePerson
+      summary: Terminate the valid period of a person
+      description: Ends the person's valid period. The record is preserved in transaction time for auditing.
+      parameters:
+        - name: validTo
+          in: query
+          required: false
+          description: End of valid period (defaults to now)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '204':
+          description: Person valid period terminated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /persons/{personId}/history:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+    get:
+      tags: [ persons ]
+      operationId: getPersonHistory
+      summary: Get the complete bitemporal history of a person
+      description: Returns all versions across both valid time and transaction time.
+      responses:
+        '200':
+          description: Full bitemporal history ordered by transactionFrom, validFrom
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /persons/{personId}/addresses:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+    get:
+      tags: [ person-relations ]
+      operationId: getPersonAddresses
+      summary: Get addresses linked to a person at a given bitemporal point
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+      responses:
+        '200':
+          description: List of person-address relations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonAddress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [ person-relations ]
+      operationId: addPersonAddress
+      summary: Link an address to a person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonAddressRequest'
+      responses:
+        '201':
+          description: Relation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonAddress'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /persons/{personId}/addresses/{addressId}:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/AddressId'
+    delete:
+      tags: [ person-relations ]
+      operationId: removePersonAddress
+      summary: Terminate a person-address relation
+      parameters:
+        - name: validTo
+          in: query
+          required: false
+          description: End of valid period (defaults to now)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '204':
+          description: Relation terminated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /persons/{personId}/agreements:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+    get:
+      tags: [ person-relations ]
+      operationId: getPersonAgreements
+      summary: Get agreements linked to a person at a given bitemporal point
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+      responses:
+        '200':
+          description: List of person-agreement relations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonAgreement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [ person-relations ]
+      operationId: addPersonAgreement
+      summary: Link an agreement to a person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonAgreementRequest'
+      responses:
+        '201':
+          description: Relation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonAgreement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /persons/{personId}/agreements/{agreementId}:
+    parameters:
+      - $ref: '#/components/parameters/PersonId'
+      - $ref: '#/components/parameters/AgreementId'
+    delete:
+      tags: [ person-relations ]
+      operationId: removePersonAgreement
+      summary: Terminate a person-agreement relation
+      parameters:
+        - name: validTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '204':
+          description: Relation terminated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== ADDRESSES ====================
+  /addresses:
+    get:
+      tags: [ addresses ]
+      operationId: listAddresses
+      summary: List addresses at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paginated list of addresses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [ addresses ]
+      operationId: createAddress
+      summary: Create a new address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /addresses/{addressId}:
+    parameters:
+      - $ref: '#/components/parameters/AddressId'
+    get:
+      tags: [ addresses ]
+      operationId: getAddress
+      summary: Get an address at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+      responses:
+        '200':
+          description: Address found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [ addresses ]
+      operationId: updateAddress
+      summary: Update an address (creates a new transaction-time version)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+      responses:
+        '200':
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [ addresses ]
+      operationId: terminateAddress
+      summary: Terminate the valid period of an address
+      parameters:
+        - name: validTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '204':
+          description: Address terminated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /addresses/{addressId}/history:
+    parameters:
+      - $ref: '#/components/parameters/AddressId'
+    get:
+      tags: [ addresses ]
+      operationId: getAddressHistory
+      summary: Get the complete bitemporal history of an address
+      responses:
+        '200':
+          description: Full bitemporal history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ==================== AGREEMENTS ====================
+  /agreements:
+    get:
+      tags: [ agreements ]
+      operationId: listAgreements
+      summary: List agreements at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paginated list of agreements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [ agreements ]
+      operationId: createAgreement
+      summary: Create a new agreement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementRequest'
+      responses:
+        '201':
+          description: Agreement created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /agreements/{agreementId}:
+    parameters:
+      - $ref: '#/components/parameters/AgreementId'
+    get:
+      tags: [ agreements ]
+      operationId: getAgreement
+      summary: Get an agreement at a given bitemporal point in time
+      parameters:
+        - $ref: '#/components/parameters/ValidAt'
+        - $ref: '#/components/parameters/TransactionAt'
+      responses:
+        '200':
+          description: Agreement found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [ agreements ]
+      operationId: updateAgreement
+      summary: Update an agreement (creates a new transaction-time version)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgreementRequest'
+      responses:
+        '200':
+          description: Agreement updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agreement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [ agreements ]
+      operationId: terminateAgreement
+      summary: Terminate the valid period of an agreement
+      parameters:
+        - name: validTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '204':
+          description: Agreement terminated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /agreements/{agreementId}/history:
+    parameters:
+      - $ref: '#/components/parameters/AgreementId'
+    get:
+      tags: [ agreements ]
+      operationId: getAgreementHistory
+      summary: Get the complete bitemporal history of an agreement
+      responses:
+        '200':
+          description: Full bitemporal history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agreement'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Three permission levels:
+        - READ_WRITE: full CRUD access
+        - READ: read-only (GET) access
+        - NO_ACCESS: all requests denied (key is revoked)
+
+  parameters:
+    PersonId:
+      name: personId
+      in: path
+      required: true
+      description: Person business UUID (stable across versions)
+      schema:
+        type: string
+        format: uuid
+
+    AddressId:
+      name: addressId
+      in: path
+      required: true
+      description: Address business UUID (stable across versions)
+      schema:
+        type: string
+        format: uuid
+
+    AgreementId:
+      name: agreementId
+      in: path
+      required: true
+      description: Agreement business UUID (stable across versions)
+      schema:
+        type: string
+        format: uuid
+
+    ValidAt:
+      name: validAt
+      in: query
+      required: false
+      description: |
+        Point-in-time for the valid time dimension (ISO 8601 date-time).
+        Defaults to current time — returns the currently valid state.
+      schema:
+        type: string
+        format: date-time
+
+    TransactionAt:
+      name: transactionAt
+      in: query
+      required: false
+      description: |
+        Point-in-time for the transaction time dimension (ISO 8601 date-time).
+        Defaults to current time — returns the state as currently recorded.
+      schema:
+        type: string
+        format: date-time
+
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+
+    # ==================== SHARED ====================
+    BitemporalInfo:
+      type: object
+      description: Bitemporal metadata attached to every versioned record
+      properties:
+        validFrom:
+          type: string
+          format: date-time
+          description: Start of valid period (when fact became true in reality)
+        validTo:
+          type: string
+          format: date-time
+          description: End of valid period (null = currently valid)
+        transactionFrom:
+          type: string
+          format: date-time
+          description: When this version was recorded in the database
+        transactionTo:
+          type: string
+          format: date-time
+          description: When this version was superseded (null = current version)
+
+    # ==================== PERSON ====================
+    Person:
+      allOf:
+        - $ref: '#/components/schemas/BitemporalInfo'
+        - type: object
+          required: [ uid, firstName, lastName, dateOfBirth ]
+          properties:
+            uid:
+              type: string
+              format: uuid
+              description: Stable business identifier (same UUID across all versions)
+            firstName:
+              type: string
+              maxLength: 100
+            lastName:
+              type: string
+              maxLength: 100
+            dateOfBirth:
+              type: string
+              format: date
+
+    PersonRequest:
+      type: object
+      required: [ firstName, lastName, dateOfBirth ]
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        dateOfBirth:
+          type: string
+          format: date
+        validFrom:
+          type: string
+          format: date-time
+          description: Start of valid period (defaults to now)
+        validTo:
+          type: string
+          format: date-time
+          description: End of valid period (defaults to open/infinity)
+
+    PersonPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    # ==================== ADDRESS ====================
+    Address:
+      allOf:
+        - $ref: '#/components/schemas/BitemporalInfo'
+        - type: object
+          required: [ uid, street, houseNumber, postalCode, city ]
+          properties:
+            uid:
+              type: string
+              format: uuid
+            street:
+              type: string
+              maxLength: 200
+            houseNumber:
+              type: string
+              maxLength: 20
+            postalCode:
+              type: string
+              maxLength: 20
+            city:
+              type: string
+              maxLength: 100
+
+    AddressRequest:
+      type: object
+      required: [ street, houseNumber, postalCode, city ]
+      properties:
+        street:
+          type: string
+          minLength: 1
+          maxLength: 200
+        houseNumber:
+          type: string
+          minLength: 1
+          maxLength: 20
+        postalCode:
+          type: string
+          minLength: 1
+          maxLength: 20
+        city:
+          type: string
+          minLength: 1
+          maxLength: 100
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+
+    AddressPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    # ==================== AGREEMENT ====================
+    AgreementState:
+      type: string
+      enum: [ NEW, CHANGED, READY ]
+      description: Lifecycle state of an agreement
+
+    Agreement:
+      allOf:
+        - $ref: '#/components/schemas/BitemporalInfo'
+        - type: object
+          required: [ uid, title, state ]
+          properties:
+            uid:
+              type: string
+              format: uuid
+            title:
+              type: string
+              maxLength: 200
+            description:
+              type: string
+            state:
+              $ref: '#/components/schemas/AgreementState'
+
+    AgreementRequest:
+      type: object
+      required: [ title, state ]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        state:
+          $ref: '#/components/schemas/AgreementState'
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+
+    AgreementPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Agreement'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    # ==================== RELATIONS ====================
+    AddressType:
+      type: string
+      enum: [ HOME, WORK ]
+      description: The role of the address for the person
+
+    PersonAddress:
+      type: object
+      properties:
+        uid:
+          type: string
+          format: uuid
+        personUid:
+          type: string
+          format: uuid
+        addressUid:
+          type: string
+          format: uuid
+        addressType:
+          $ref: '#/components/schemas/AddressType'
+        address:
+          $ref: '#/components/schemas/Address'
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+        transactionFrom:
+          type: string
+          format: date-time
+        transactionTo:
+          type: string
+          format: date-time
+
+    PersonAddressRequest:
+      type: object
+      required: [ addressUid, addressType ]
+      properties:
+        addressUid:
+          type: string
+          format: uuid
+        addressType:
+          $ref: '#/components/schemas/AddressType'
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+
+    PersonAgreement:
+      type: object
+      properties:
+        uid:
+          type: string
+          format: uuid
+        personUid:
+          type: string
+          format: uuid
+        agreementUid:
+          type: string
+          format: uuid
+        agreement:
+          $ref: '#/components/schemas/Agreement'
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+        transactionFrom:
+          type: string
+          format: date-time
+        transactionTo:
+          type: string
+          format: date-time
+
+    PersonAgreementRequest:
+      type: object
+      required: [ agreementUid ]
+      properties:
+        agreementUid:
+          type: string
+          format: uuid
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+
+    # ==================== ERRORS ====================
+    ApiError:
+      type: object
+      required: [ status, message, timestamp ]
+      properties:
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: array
+          items:
+            type: string
+
+  responses:
+    BadRequest:
+      description: Bad request — validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Unauthorized — missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: Forbidden — insufficient permissions for this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Resource not found at the requested bitemporal point
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: Conflict — resource already exists or constraint violated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'

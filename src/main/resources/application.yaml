@@ -1,3 +1,88 @@
 spring:
   application:
     name: timeseries
+
+  # ===== DATASOURCE =====
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/timeseries}
+    username: ${SPRING_DATASOURCE_USERNAME:testuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:12345}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # ===== JPA =====
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway manages the schema; Hibernate only validates
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+        jdbc:
+          time_zone: UTC
+
+  # ===== FLYWAY =====
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+
+  # ===== JACKSON =====
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+# ===== SERVER =====
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# ===== SPRINGDOC / SWAGGER UI =====
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: alpha
+    tagsSorter: alpha
+    try-it-out-enabled: true
+  # Point to the hand-crafted spec, not the auto-generated one
+  swagger-ui.url: /api-docs/openapi.yaml
+
+# ===== LOGGING =====
+logging:
+  level:
+    root: INFO
+    com.bsoft.timeseries: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.flywaydb: INFO
+
+# ===== APPLICATION PROPERTIES =====
+app:
+  bitemporal:
+    # Sentinel value for "open" end of a temporal period
+    infinity: "9999-12-31T23:59:59Z"
+  security:
+    api-key:
+      header-name: X-API-Key
