@@ -20,18 +20,14 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Business logic for person management using bitemporal semantics.
+ * Bitemporal person service following the Snodgrass update protocol:
+ *   1. Close current transaction version (transactionTo = now)
+ *   2. Insert new version (transactionFrom = now, transactionTo = INFINITY)
  *
- * <h2>Bitemporal update protocol (Snodgrass §8)</h2>
- * <ol>
- *   <li>Close the current transaction-time version by setting
- *       {@code transactionTo = now}.</li>
- *   <li>Insert a new row with {@code transactionFrom = now},
- *       {@code transactionTo = INFINITY}, carrying the updated
- *       attributes and the caller-supplied valid time.</li>
- * </ol>
- * This preserves the full audit trail — no row is ever deleted or modified
- * after initial insert.
+ * NOTE: entity construction uses new + setters, NOT the Lombok builder,
+ * because @Builder on a subclass only exposes fields declared in that
+ * subclass. Inherited BitemporalEntity fields (uid, validFrom, …) are
+ * invisible to the builder and cause "cannot find symbol" compile errors.
  */
 @Service
 @RequiredArgsConstructor
@@ -39,147 +35,113 @@ import java.util.UUID;
 @Transactional
 public class PersonService {
 
-    private final PersonRepository  personRepository;
-    private final PersonMapper      personMapper;
+    private final PersonRepository personRepository;
+    private final PersonMapper     personMapper;
 
     // ----------------------------------------------------------------
     // CREATE
     // ----------------------------------------------------------------
 
-    /**
-     * Creates a new person with the given attributes.
-     * Valid time defaults to {@code now → INFINITY} unless the caller
-     * supplies explicit bounds in the request.
-     */
     public Person create(PersonRequest request) {
         PersonEntity entity = personMapper.toNewEntity(request);
-
-        // Apply valid-time defaults if not provided
+        // @PrePersist sets uid / transactionFrom / transactionTo / createdAt
         if (entity.getValidFrom() == null) entity.setValidFrom(OffsetDateTime.now());
         if (entity.getValidTo()   == null) entity.setValidTo(BitemporalEntity.INFINITY);
 
-        // Transaction time is always set by @PrePersist
         PersonEntity saved = personRepository.save(entity);
         log.info("Created person uid={}", saved.getUid());
         return personMapper.toDto(saved);
     }
 
     // ----------------------------------------------------------------
-    // READ — point-in-time
+    // READ
     // ----------------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public Person findAtPoint(UUID uid,
-                              OffsetDateTime validAt,
-                              OffsetDateTime transactionAt) {
+    public Person findAtPoint(UUID uid, OffsetDateTime validAt, OffsetDateTime transactionAt) {
         return personRepository.findAtPoint(uid, validAt, transactionAt)
                 .map(personMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Person", uid));
     }
 
     @Transactional(readOnly = true)
-    public PersonPage listAtPoint(OffsetDateTime validAt,
-                                  OffsetDateTime transactionAt,
+    public PersonPage listAtPoint(OffsetDateTime validAt, OffsetDateTime transactionAt,
                                   int page, int size) {
-        Page<PersonEntity> entityPage = personRepository.findAllAtPoint(
+        Page<PersonEntity> p = personRepository.findAllAtPoint(
                 validAt, transactionAt, PageRequest.of(page, size));
-
         PersonPage result = new PersonPage();
-        result.setContent(personMapper.toDtoList(entityPage.getContent()));
-        result.setTotalElements(entityPage.getTotalElements());
-        result.setTotalPages(entityPage.getTotalPages());
+        result.setContent(personMapper.toDtoList(p.getContent()));
+        result.setTotalElements(p.getTotalElements());
+        result.setTotalPages(p.getTotalPages());
         result.setPage(page);
         result.setSize(size);
         return result;
     }
 
-    // ----------------------------------------------------------------
-    // HISTORY
-    // ----------------------------------------------------------------
-
     @Transactional(readOnly = true)
     public List<Person> history(UUID uid) {
         List<PersonEntity> versions = personRepository.findAllVersions(uid);
-        if (versions.isEmpty()) {
-            throw new ResourceNotFoundException("Person", uid);
-        }
+        if (versions.isEmpty()) throw new ResourceNotFoundException("Person", uid);
         return personMapper.toDtoList(versions);
     }
 
     // ----------------------------------------------------------------
-    // UPDATE — bitemporal correction
+    // UPDATE — new transaction-time version
     // ----------------------------------------------------------------
 
-    /**
-     * Updates a person by closing the current transaction version and inserting
-     * a new one. The caller may supply new valid-time bounds; if omitted,
-     * the existing bounds are carried forward.
-     */
     public Person update(UUID uid, PersonRequest request) {
         OffsetDateTime now = OffsetDateTime.now();
 
-        // 1. Verify entity exists (current transaction-time version)
-        PersonEntity current = personRepository
-                .findAtPoint(uid, now, now)
+        PersonEntity current = personRepository.findAtPoint(uid, now, now)
                 .orElseThrow(() -> new ResourceNotFoundException("Person", uid));
 
-        // 2. Close the current transaction version
+        // 1. Close current transaction version
         personRepository.closeCurrentTransactionVersion(uid, now, BitemporalEntity.INFINITY);
 
-        // 3. Build new version copying the current entity, then apply request delta
-        PersonEntity next = PersonEntity.builder()
-                .uid(uid)
-                .firstName(request.getFirstName() != null
-                        ? request.getFirstName() : current.getFirstName())
-                .lastName(request.getLastName() != null
-                        ? request.getLastName() : current.getLastName())
-                .dateOfBirth(request.getDateOfBirth() != null
-                        ? java.time.LocalDate.parse(request.getDateOfBirth())
-                        : current.getDateOfBirth())
-                .validFrom(request.getValidFrom() != null
-                        ? request.getValidFrom() : current.getValidFrom())
-                .validTo(request.getValidTo() != null
-                        ? request.getValidTo() : current.getValidTo())
-                .transactionFrom(now)
-                .transactionTo(BitemporalEntity.INFINITY)
-                .build();
+        // 2. Insert new version — use setters so inherited fields are reachable
+        PersonEntity next = new PersonEntity();
+        next.setUid(uid);
+        next.setFirstName(request.getFirstName() != null
+                ? request.getFirstName() : current.getFirstName());
+        next.setLastName(request.getLastName() != null
+                ? request.getLastName() : current.getLastName());
+        // getDateOfBirth() returns LocalDate directly (format: date + java8 dateLibrary)
+        next.setDateOfBirth(request.getDateOfBirth() != null
+                ? request.getDateOfBirth() : current.getDateOfBirth());
+        next.setValidFrom(request.getValidFrom() != null
+                ? request.getValidFrom() : current.getValidFrom());
+        next.setValidTo(request.getValidTo() != null
+                ? request.getValidTo() : current.getValidTo());
+        next.setTransactionFrom(now);
+        next.setTransactionTo(BitemporalEntity.INFINITY);
 
         PersonEntity saved = personRepository.save(next);
-        log.info("Updated person uid={} — new transaction version", uid);
+        log.info("Updated person uid={}", uid);
         return personMapper.toDto(saved);
     }
 
     // ----------------------------------------------------------------
-    // TERMINATE (valid-time close)
+    // TERMINATE
     // ----------------------------------------------------------------
 
-    /**
-     * Ends the valid-time period of a person. The existing transaction-time
-     * row is replaced with a new version that has {@code validTo} set.
-     * This models the real-world fact ending, not an error correction.
-     */
     public void terminate(UUID uid, OffsetDateTime validTo) {
-        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime now         = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
-        PersonEntity current = personRepository
-                .findAtPoint(uid, now, now)
+        PersonEntity current = personRepository.findAtPoint(uid, now, now)
                 .orElseThrow(() -> new ResourceNotFoundException("Person", uid));
 
-        // Close old version
         personRepository.closeCurrentTransactionVersion(uid, now, BitemporalEntity.INFINITY);
 
-        // New version with restricted valid_to
-        PersonEntity terminated = PersonEntity.builder()
-                .uid(uid)
-                .firstName(current.getFirstName())
-                .lastName(current.getLastName())
-                .dateOfBirth(current.getDateOfBirth())
-                .validFrom(current.getValidFrom())
-                .validTo(effectiveTo)
-                .transactionFrom(now)
-                .transactionTo(BitemporalEntity.INFINITY)
-                .build();
+        PersonEntity terminated = new PersonEntity();
+        terminated.setUid(uid);
+        terminated.setFirstName(current.getFirstName());
+        terminated.setLastName(current.getLastName());
+        terminated.setDateOfBirth(current.getDateOfBirth());
+        terminated.setValidFrom(current.getValidFrom());
+        terminated.setValidTo(effectiveTo);
+        terminated.setTransactionFrom(now);
+        terminated.setTransactionTo(BitemporalEntity.INFINITY);
 
         personRepository.save(terminated);
         log.info("Terminated person uid={} validTo={}", uid, effectiveTo);

@@ -1,5 +1,7 @@
 # Prompt
 
+Using Sonnet 4.6 Adaptive
+
 ```text
 You are an experienced java software developer with extended knowledge of:
 - spring-boot version 4

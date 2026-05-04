@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+// See PersonMapper for explanation of @BeanMapping(builder = @Builder(disableBuilder = true))
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AddressMapper {
 
@@ -22,6 +23,7 @@ public interface AddressMapper {
 
     List<Address> toDtoList(List<AddressEntity> entities);
 
+    @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "id",              ignore = true)
     @Mapping(target = "uid",             ignore = true)
     @Mapping(target = "createdAt",       ignore = true)
@@ -36,11 +38,12 @@ public interface AddressMapper {
     @Mapping(target = "transactionTo",   ignore = true)
     void updateEntity(AddressRequest request, @MappingTarget AddressEntity entity);
 
+    @Named("nullIfInfinity")
     default OffsetDateTime nullIfInfinity(OffsetDateTime value) {
         return BitemporalEntity.INFINITY.equals(value) ? null : value;
     }
 
-    default String map(UUID value) {
+    default String mapUuid(UUID value) {
         return value == null ? null : value.toString();
     }
 }

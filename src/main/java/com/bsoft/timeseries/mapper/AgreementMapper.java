@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+// See PersonMapper for explanation of @BeanMapping(builder = @Builder(disableBuilder = true))
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AgreementMapper {
 
@@ -24,6 +25,7 @@ public interface AgreementMapper {
 
     List<Agreement> toDtoList(List<AgreementEntity> entities);
 
+    @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "id",              ignore = true)
     @Mapping(target = "uid",             ignore = true)
     @Mapping(target = "createdAt",       ignore = true)
@@ -50,11 +52,12 @@ public interface AgreementMapper {
         return AgreementEntity.State.valueOf(state.getValue());
     }
 
+    @Named("nullIfInfinity")
     default OffsetDateTime nullIfInfinity(OffsetDateTime value) {
         return BitemporalEntity.INFINITY.equals(value) ? null : value;
     }
 
-    default String map(UUID value) {
+    default String mapUuid(UUID value) {
         return value == null ? null : value.toString();
     }
 }

@@ -49,7 +49,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.7.11</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -152,8 +151,10 @@
 								<useBeanValidation>true</useBeanValidation>
 								<!-- Use @SpringBootApplication-friendly component scan -->
 								<basePackage>com.bsoft.timeseries</basePackage>
-								<!-- Generate constructors / builders -->
-								<additionalModelTypeAnnotations>@lombok.Builder @lombok.NoArgsConstructor @lombok.AllArgsConstructor</additionalModelTypeAnnotations>
+								<!-- Do NOT inject Lombok annotations onto generated model classes:
+                                     the generator already emits its own constructors/getters/setters.
+                                     Adding @NoArgsConstructor / @AllArgsConstructor here causes
+                                     "constructor already defined" compile errors. -->
 							</configOptions>
 						</configuration>
 					</execution>

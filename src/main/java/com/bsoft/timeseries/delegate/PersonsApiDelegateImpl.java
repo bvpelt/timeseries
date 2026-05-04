@@ -2,7 +2,6 @@ package com.bsoft.timeseries.delegate;
 
 import com.bsoft.timeseries.api.PersonsApiDelegate;
 import com.bsoft.timeseries.model.*;
-import com.bsoft.timeseries.service.PersonRelationService;
 import com.bsoft.timeseries.service.PersonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,62 +15,49 @@ import java.util.UUID;
 import static com.bsoft.timeseries.delegate.DelegateSupport.*;
 
 /**
- * Implements the OpenAPI-generated {@link PersonsApiDelegate}.
+ * Implements PersonsApiDelegate — person CRUD + history only.
  *
- * <p>Each method delegates to the appropriate service, handles parameter
- * defaulting (bitemporal point defaults to "now"), and wraps results in
- * the correct HTTP status code.</p>
+ * The person-relations endpoints (addresses, agreements on a person) are
+ * tagged "person-relations" in the OpenAPI spec, so the generator placed
+ * them in PersonRelationsApiDelegate. They are implemented in
+ * PersonRelationsApiDelegateImpl.
  */
 @Component
 @RequiredArgsConstructor
 public class PersonsApiDelegateImpl implements PersonsApiDelegate {
 
-    private final PersonService        personService;
-    private final PersonRelationService personRelationService;
-
-    // ------------------------------------------------------------------
-    // Person CRUD
-    // ------------------------------------------------------------------
+    private final PersonService personService;
 
     @Override
     public ResponseEntity<PersonPage> listPersons(OffsetDateTime validAt,
                                                   OffsetDateTime transactionAt,
-                                                  Integer page,
-                                                  Integer size) {
-        PersonPage result = personService.listAtPoint(
-                resolveValidAt(validAt),
-                resolveTransactionAt(transactionAt),
-                page  != null ? page  : 0,
-                size  != null ? size  : 20);
-        return ResponseEntity.ok(result);
+                                                  Integer page, Integer size) {
+        return ResponseEntity.ok(personService.listAtPoint(
+                resolveValidAt(validAt), resolveTransactionAt(transactionAt),
+                page != null ? page : 0,
+                size != null ? size : 20));
     }
 
     @Override
     public ResponseEntity<Person> createPerson(PersonRequest request) {
-        Person created = personService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(personService.create(request));
     }
 
     @Override
     public ResponseEntity<Person> getPerson(UUID personId,
                                             OffsetDateTime validAt,
                                             OffsetDateTime transactionAt) {
-        Person person = personService.findAtPoint(personId,
-                resolveValidAt(validAt),
-                resolveTransactionAt(transactionAt));
-        return ResponseEntity.ok(person);
+        return ResponseEntity.ok(personService.findAtPoint(
+                personId, resolveValidAt(validAt), resolveTransactionAt(transactionAt)));
     }
 
     @Override
-    public ResponseEntity<Person> updatePerson(UUID personId,
-                                               PersonRequest request) {
-        Person updated = personService.update(personId, request);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<Person> updatePerson(UUID personId, PersonRequest request) {
+        return ResponseEntity.ok(personService.update(personId, request));
     }
 
     @Override
-    public ResponseEntity<Void> terminatePerson(UUID personId,
-                                                OffsetDateTime validTo) {
+    public ResponseEntity<Void> terminatePerson(UUID personId, OffsetDateTime validTo) {
         personService.terminate(personId, validTo);
         return ResponseEntity.noContent().build();
     }
@@ -79,65 +65,5 @@ public class PersonsApiDelegateImpl implements PersonsApiDelegate {
     @Override
     public ResponseEntity<List<Person>> getPersonHistory(UUID personId) {
         return ResponseEntity.ok(personService.history(personId));
-    }
-
-    // ------------------------------------------------------------------
-    // Person ↔ Address relations
-    // ------------------------------------------------------------------
-
-    @Override
-    public ResponseEntity<List<PersonAddress>> getPersonAddresses(UUID personId,
-                                                                  OffsetDateTime validAt,
-                                                                  OffsetDateTime transactionAt) {
-        List<PersonAddress> links = personRelationService.getPersonAddresses(
-                personId,
-                resolveValidAt(validAt),
-                resolveTransactionAt(transactionAt));
-        return ResponseEntity.ok(links);
-    }
-
-    @Override
-    public ResponseEntity<PersonAddress> addPersonAddress(UUID personId,
-                                                          PersonAddressRequest request) {
-        PersonAddress link = personRelationService.addPersonAddress(personId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(link);
-    }
-
-    @Override
-    public ResponseEntity<Void> removePersonAddress(UUID personId,
-                                                    UUID addressId,
-                                                    OffsetDateTime validTo) {
-        personRelationService.removePersonAddress(personId, addressId, validTo);
-        return ResponseEntity.noContent().build();
-    }
-
-    // ------------------------------------------------------------------
-    // Person ↔ Agreement relations
-    // ------------------------------------------------------------------
-
-    @Override
-    public ResponseEntity<List<PersonAgreement>> getPersonAgreements(UUID personId,
-                                                                     OffsetDateTime validAt,
-                                                                     OffsetDateTime transactionAt) {
-        List<PersonAgreement> links = personRelationService.getPersonAgreements(
-                personId,
-                resolveValidAt(validAt),
-                resolveTransactionAt(transactionAt));
-        return ResponseEntity.ok(links);
-    }
-
-    @Override
-    public ResponseEntity<PersonAgreement> addPersonAgreement(UUID personId,
-                                                              PersonAgreementRequest request) {
-        PersonAgreement link = personRelationService.addPersonAgreement(personId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(link);
-    }
-
-    @Override
-    public ResponseEntity<Void> removePersonAgreement(UUID personId,
-                                                      UUID agreementId,
-                                                      OffsetDateTime validTo) {
-        personRelationService.removePersonAgreement(personId, agreementId, validTo);
-        return ResponseEntity.noContent().build();
     }
 }
