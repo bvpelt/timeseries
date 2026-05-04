@@ -166,6 +166,11 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<!-- Explicitly set main class because the OpenAPI generator also emits
+                         OpenApiGeneratorApplication.java with a main method into the
+                         generated-sources folder, causing "Unable to find a single main class"
+                         at startup. Pinning it here resolves the ambiguity. -->
+					<mainClass>com.bsoft.timeseries.TimeseriesApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
