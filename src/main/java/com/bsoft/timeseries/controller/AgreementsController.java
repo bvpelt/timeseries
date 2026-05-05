@@ -18,7 +18,7 @@ import java.util.UUID;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
-@RequestMapping("${application.basePath}")
+@RequestMapping("${openapi.bitemporalPersonAddressAgreementService.base-path}")
 @RestController
 @RequiredArgsConstructor
 public class AgreementsController implements AgreementsApi {

@@ -19,6 +19,7 @@ info:
     All requests must include the `X-API-Key` header:
     - **READ_WRITE**: full access (GET, POST, PUT, DELETE)
     - **READ**: read-only access (GET only)
+    - **ADMIN**: management/full access
     - **NO_ACCESS**: all requests denied
   version: "1.0.0"
   contact:
@@ -638,6 +639,7 @@ components:
         API key for authentication. Three permission levels:
         - READ_WRITE: full CRUD access
         - READ: read-only (GET) access
+        - ADMIN: management/full access
         - NO_ACCESS: all requests denied (key is revoked)
 
   parameters:

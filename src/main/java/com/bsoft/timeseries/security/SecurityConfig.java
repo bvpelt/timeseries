@@ -45,8 +45,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
-                                "/webjars/**",           // ← must have leading slash
-                                "/actuator/**"
+                                "/webjars/**",
+                                "/actuator/metrics/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/**")
                         .hasAnyAuthority("ADMIN", "READ", "READ_WRITE")
@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/**").hasAnyAuthority("ADMIN", "READ_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/**").hasAnyAuthority("ADMIN", "READ_WRITE")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/**").hasAnyAuthority("ADMIN", "READ_WRITE")
-                        .requestMatchers(HttpMethod.POST, "/admin/api-keys").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/actuator/**", "/admin/api-keys").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
