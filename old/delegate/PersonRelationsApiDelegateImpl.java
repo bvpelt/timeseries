@@ -1,27 +1,34 @@
 package com.bsoft.timeseries.delegate;
 
 import com.bsoft.timeseries.api.PersonRelationsApiDelegate;
-import com.bsoft.timeseries.model.*;
+import com.bsoft.timeseries.model.PersonAddress;
+import com.bsoft.timeseries.model.PersonAddressRequest;
+import com.bsoft.timeseries.model.PersonAgreement;
+import com.bsoft.timeseries.model.PersonAgreementRequest;
 import com.bsoft.timeseries.service.PersonRelationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.bsoft.timeseries.delegate.DelegateSupport.*;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
 /**
  * Implements PersonRelationsApiDelegate — the person-address and
  * person-agreement relation endpoints.
- *
+ * <p>
  * The OpenAPI generator placed these here (not in PersonsApiDelegate)
  * because those endpoints are tagged "person-relations" in the spec.
  */
-@Component
+/*
+@Service("mainPersonRelationsApiDelegate")
+@Primary
 @RequiredArgsConstructor
 public class PersonRelationsApiDelegateImpl implements PersonRelationsApiDelegate {
 
@@ -81,3 +88,5 @@ public class PersonRelationsApiDelegateImpl implements PersonRelationsApiDelegat
         return ResponseEntity.noContent().build();
     }
 }
+
+ */

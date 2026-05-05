@@ -27,8 +27,8 @@ public interface PersonAddressRepository
             ORDER BY pa.addressType, pa.validFrom
             """)
     List<PersonAddressEntity> findByPersonAtPoint(
-            @Param("personUid")     UUID personUid,
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("personUid") UUID personUid,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt);
 
     /**
@@ -45,9 +45,9 @@ public interface PersonAddressRepository
               AND pa.transactionTo    > :transactionAt
             """)
     Optional<PersonAddressEntity> findLinkAtPoint(
-            @Param("personUid")     UUID personUid,
-            @Param("addressUid")    UUID addressUid,
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("personUid") UUID personUid,
+            @Param("addressUid") UUID addressUid,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt);
 
     /**
@@ -64,8 +64,8 @@ public interface PersonAddressRepository
             """)
     long countCurrentHomeAddresses(
             @Param("personUid") UUID personUid,
-            @Param("now")       OffsetDateTime now,
-            @Param("infinity")  OffsetDateTime infinity);
+            @Param("now") OffsetDateTime now,
+            @Param("infinity") OffsetDateTime infinity);
 
     /**
      * Closes current transaction-time versions of a specific person-address link.
@@ -79,8 +79,8 @@ public interface PersonAddressRepository
             """)
     @org.springframework.data.jpa.repository.Modifying
     int closeLinkTransaction(
-            @Param("personUid")  UUID personUid,
+            @Param("personUid") UUID personUid,
             @Param("addressUid") UUID addressUid,
-            @Param("closedAt")   OffsetDateTime closedAt,
-            @Param("infinity")   OffsetDateTime infinity);
+            @Param("closedAt") OffsetDateTime closedAt,
+            @Param("infinity") OffsetDateTime infinity);
 }

@@ -46,8 +46,8 @@ public interface BitemporalRepository<T extends BitemporalEntity>
               AND e.transactionTo    > :transactionAt
             """)
     Optional<T> findAtPoint(
-            @Param("uid")           UUID uid,
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("uid") UUID uid,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt);
 
     /**
@@ -88,7 +88,7 @@ public interface BitemporalRepository<T extends BitemporalEntity>
               AND e.transactionTo    > :transactionAt
             """)
     Page<T> findAllAtPoint(
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt,
             Pageable pageable);
 
@@ -109,7 +109,7 @@ public interface BitemporalRepository<T extends BitemporalEntity>
               AND  e.transactionTo  = :infinity
             """)
     int closeCurrentTransactionVersion(
-            @Param("uid")      UUID uid,
+            @Param("uid") UUID uid,
             @Param("closedAt") OffsetDateTime closedAt,
             @Param("infinity") OffsetDateTime infinity);
 
@@ -126,7 +126,7 @@ public interface BitemporalRepository<T extends BitemporalEntity>
               AND  e.validTo       = :infinity
             """)
     int closeCurrentValidVersion(
-            @Param("uid")      UUID uid,
-            @Param("validTo")  OffsetDateTime validTo,
+            @Param("uid") UUID uid,
+            @Param("validTo") OffsetDateTime validTo,
             @Param("infinity") OffsetDateTime infinity);
 }

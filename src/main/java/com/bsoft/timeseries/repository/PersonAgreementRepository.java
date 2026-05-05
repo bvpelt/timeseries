@@ -28,8 +28,8 @@ public interface PersonAgreementRepository
             ORDER BY pa.validFrom
             """)
     List<PersonAgreementEntity> findByPersonAtPoint(
-            @Param("personUid")     UUID personUid,
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("personUid") UUID personUid,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt);
 
     /**
@@ -45,9 +45,9 @@ public interface PersonAgreementRepository
               AND pa.transactionTo    > :transactionAt
             """)
     Optional<PersonAgreementEntity> findLinkAtPoint(
-            @Param("personUid")     UUID personUid,
-            @Param("agreementUid")  UUID agreementUid,
-            @Param("validAt")       OffsetDateTime validAt,
+            @Param("personUid") UUID personUid,
+            @Param("agreementUid") UUID agreementUid,
+            @Param("validAt") OffsetDateTime validAt,
             @Param("transactionAt") OffsetDateTime transactionAt);
 
     /**
@@ -62,8 +62,8 @@ public interface PersonAgreementRepository
               AND  pa.transactionTo  = :infinity
             """)
     int closeLinkTransaction(
-            @Param("personUid")    UUID personUid,
+            @Param("personUid") UUID personUid,
             @Param("agreementUid") UUID agreementUid,
-            @Param("closedAt")     OffsetDateTime closedAt,
-            @Param("infinity")     OffsetDateTime infinity);
+            @Param("closedAt") OffsetDateTime closedAt,
+            @Param("infinity") OffsetDateTime infinity);
 }

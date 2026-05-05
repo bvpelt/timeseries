@@ -6,17 +6,21 @@ import com.bsoft.timeseries.model.AddressPage;
 import com.bsoft.timeseries.model.AddressRequest;
 import com.bsoft.timeseries.service.AddressService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.bsoft.timeseries.delegate.DelegateSupport.*;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
-@Component
+//@Service("mainAddressDelegate")
+//@Primary
+/*
 @RequiredArgsConstructor
 public class AddressesApiDelegateImpl implements AddressesApiDelegate {
 
@@ -68,3 +72,5 @@ public class AddressesApiDelegateImpl implements AddressesApiDelegate {
         return ResponseEntity.ok(addressService.history(addressId));
     }
 }
+
+ */

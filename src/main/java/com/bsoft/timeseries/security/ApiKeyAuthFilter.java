@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,13 +23,17 @@ import java.util.Optional;
  * These checks happen before Spring Security's own access-decision logic,
  * which enforces per-endpoint HTTP method restrictions.</p>
  */
-@RequiredArgsConstructor
 @Slf4j
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     public static final String API_KEY_HEADER = "X-API-Key";
 
     private final ApiKeyService apiKeyService;
+
+    // Handmatige constructor, GEEN @RequiredArgsConstructor
+    public ApiKeyAuthFilter(ApiKeyService apiKeyService) {
+        this.apiKeyService = apiKeyService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

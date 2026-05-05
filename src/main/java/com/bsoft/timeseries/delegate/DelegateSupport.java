@@ -8,19 +8,21 @@ import java.time.OffsetDateTime;
  * "current time" when the caller does not supply a value, which gives
  * the standard "show me the current state" behaviour.
  */
-final class DelegateSupport {
+//final class DelegateSupport {
+public class DelegateSupport {
 
-    private DelegateSupport() {}
+    public DelegateSupport() {
+    }
 
-    static OffsetDateTime resolveTime(OffsetDateTime requested) {
+    public static OffsetDateTime resolveTime(OffsetDateTime requested) {
         return requested != null ? requested : OffsetDateTime.now();
     }
 
-    static OffsetDateTime resolveValidAt(OffsetDateTime validAt) {
+    public static OffsetDateTime resolveValidAt(OffsetDateTime validAt) {
         return resolveTime(validAt);
     }
 
-    static OffsetDateTime resolveTransactionAt(OffsetDateTime transactionAt) {
+    public static OffsetDateTime resolveTransactionAt(OffsetDateTime transactionAt) {
         return resolveTime(transactionAt);
     }
 }

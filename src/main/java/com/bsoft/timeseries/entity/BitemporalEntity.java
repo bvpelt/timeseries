@@ -71,22 +71,30 @@ public abstract class BitemporalEntity {
     // Helpers
     // -----------------------------------------------------------------
 
-    /** True when this row is the "current" transaction-time version. */
+    /**
+     * True when this row is the "current" transaction-time version.
+     */
     public boolean isCurrentTransaction() {
         return INFINITY.equals(transactionTo);
     }
 
-    /** True when this row is valid at the given point in valid time. */
+    /**
+     * True when this row is valid at the given point in valid time.
+     */
     public boolean isValidAt(OffsetDateTime point) {
         return !validFrom.isAfter(point) && validTo.isAfter(point);
     }
 
-    /** Closes the transaction-time window — marks this version as superseded. */
+    /**
+     * Closes the transaction-time window — marks this version as superseded.
+     */
     public void closeTransaction(OffsetDateTime at) {
         this.transactionTo = at;
     }
 
-    /** Closes the valid-time window — ends validity in the real world. */
+    /**
+     * Closes the valid-time window — ends validity in the real world.
+     */
     public void closeValid(OffsetDateTime at) {
         this.validTo = at;
     }
@@ -94,11 +102,11 @@ public abstract class BitemporalEntity {
     @PrePersist
     protected void prePersist() {
         OffsetDateTime now = OffsetDateTime.now();
-        if (uid == null)             uid             = UUID.randomUUID();
-        if (validFrom == null)       validFrom       = now;
-        if (validTo == null)         validTo         = INFINITY;
+        if (uid == null) uid = UUID.randomUUID();
+        if (validFrom == null) validFrom = now;
+        if (validTo == null) validTo = INFINITY;
         if (transactionFrom == null) transactionFrom = now;
-        if (transactionTo == null)   transactionTo   = INFINITY;
-        if (createdAt == null)       createdAt       = now;
+        if (transactionTo == null) transactionTo = INFINITY;
+        if (createdAt == null) createdAt = now;
     }
 }

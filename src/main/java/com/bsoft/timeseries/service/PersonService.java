@@ -8,8 +8,8 @@ import com.bsoft.timeseries.model.Person;
 import com.bsoft.timeseries.model.PersonPage;
 import com.bsoft.timeseries.model.PersonRequest;
 import com.bsoft.timeseries.repository.PersonRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -21,22 +21,28 @@ import java.util.UUID;
 
 /**
  * Bitemporal person service following the Snodgrass update protocol:
- *   1. Close current transaction version (transactionTo = now)
- *   2. Insert new version (transactionFrom = now, transactionTo = INFINITY)
- *
+ * 1. Close current transaction version (transactionTo = now)
+ * 2. Insert new version (transactionFrom = now, transactionTo = INFINITY)
+ * <p>
  * NOTE: entity construction uses new + setters, NOT the Lombok builder,
  * because @Builder on a subclass only exposes fields declared in that
  * subclass. Inherited BitemporalEntity fields (uid, validFrom, …) are
  * invisible to the builder and cause "cannot find symbol" compile errors.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private final PersonMapper     personMapper;
+    private final PersonMapper personMapper;
+
+    public PersonService(PersonRepository personRepository,
+                         @Qualifier("personMapperImpl") PersonMapper personMapper) {
+        this.personRepository = personRepository;
+        this.personMapper = personMapper;
+    }
+
 
     // ----------------------------------------------------------------
     // CREATE
@@ -46,7 +52,7 @@ public class PersonService {
         PersonEntity entity = personMapper.toNewEntity(request);
         // @PrePersist sets uid / transactionFrom / transactionTo / createdAt
         if (entity.getValidFrom() == null) entity.setValidFrom(OffsetDateTime.now());
-        if (entity.getValidTo()   == null) entity.setValidTo(BitemporalEntity.INFINITY);
+        if (entity.getValidTo() == null) entity.setValidTo(BitemporalEntity.INFINITY);
 
         PersonEntity saved = personRepository.save(entity);
         log.info("Created person uid={}", saved.getUid());
@@ -125,7 +131,7 @@ public class PersonService {
     // ----------------------------------------------------------------
 
     public void terminate(UUID uid, OffsetDateTime validTo) {
-        OffsetDateTime now         = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
         PersonEntity current = personRepository.findAtPoint(uid, now, now)

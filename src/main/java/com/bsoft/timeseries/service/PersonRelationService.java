@@ -9,8 +9,8 @@ import com.bsoft.timeseries.mapper.PersonAddressMapper;
 import com.bsoft.timeseries.mapper.PersonAgreementMapper;
 import com.bsoft.timeseries.model.*;
 import com.bsoft.timeseries.repository.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,28 +20,44 @@ import java.util.UUID;
 
 /**
  * Manages bitemporal N:M relations: Person↔Address and Person↔Agreement.
- *
+ * <p>
  * Entity construction uses new + setters throughout (not the Lombok builder)
  * because @Builder on a subclass does not expose inherited BitemporalEntity
  * fields. See PersonService for full explanation.
- *
+ * <p>
  * The generated model fields addressUid and agreementUid are typed UUID
  * (format: uuid + dateLibrary=java8), so UUID.fromString() must NOT be called.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class PersonRelationService {
 
-    private final PersonRepository          personRepository;
-    private final AddressRepository         addressRepository;
-    private final AgreementRepository       agreementRepository;
-    private final PersonAddressRepository   personAddressRepository;
+    private final PersonRepository personRepository;
+    private final AddressRepository addressRepository;
+    private final AgreementRepository agreementRepository;
+    private final PersonAddressRepository personAddressRepository;
     private final PersonAgreementRepository personAgreementRepository;
-    private final PersonAddressMapper       personAddressMapper;
-    private final PersonAgreementMapper     personAgreementMapper;
+    private final PersonAddressMapper personAddressMapper;
+    private final PersonAgreementMapper personAgreementMapper;
 
+    public PersonRelationService(
+            PersonRepository personRepository,
+            AddressRepository addressRepository,
+            AgreementRepository agreementRepository,
+            PersonAddressRepository personAddressRepository,
+            PersonAgreementRepository personAgreementRepository,
+            @Qualifier("personAddressMapperImpl") PersonAddressMapper personAddressMapper,
+            @Qualifier("personAgreementMapperImpl") PersonAgreementMapper personAgreementMapper
+    ) {
+        this.personRepository = personRepository;
+        this.addressRepository = addressRepository;
+        this.agreementRepository = agreementRepository;
+        this.personAddressRepository = personAddressRepository;
+        this.personAgreementRepository = personAgreementRepository;
+        this.personAddressMapper = personAddressMapper;
+        this.personAgreementMapper = personAgreementMapper;
+    }
     // ==================================================================
     // PERSON ↔ ADDRESS
     // ==================================================================
@@ -59,18 +75,20 @@ public class PersonRelationService {
         OffsetDateTime now = OffsetDateTime.now();
 
         // getAddressUid() returns UUID directly — no UUID.fromString() needed
-        UUID addressUid   = request.getAddressUid();
+        UUID addressUid = request.getAddressUid();
         OffsetDateTime vf = request.getValidFrom() != null ? request.getValidFrom() : now;
-        OffsetDateTime vt = request.getValidTo()   != null ? request.getValidTo()   : BitemporalEntity.INFINITY;
+        OffsetDateTime vt = request.getValidTo() != null ? request.getValidTo() : BitemporalEntity.INFINITY;
 
         assertPersonExists(personUid, now, now);
         assertAddressExists(addressUid, now, now);
 
         // Guard: no duplicate link
         personAddressRepository.findLinkAtPoint(personUid, addressUid, vf, now)
-                .ifPresent(e -> { throw new ConflictException(
-                        "Person %s already has address %s linked at %s"
-                                .formatted(personUid, addressUid, vf)); });
+                .ifPresent(e -> {
+                    throw new ConflictException(
+                            "Person %s already has address %s linked at %s"
+                                    .formatted(personUid, addressUid, vf));
+                });
 
         // Guard: at most one HOME address per person at a time
         if (request.getAddressType() == AddressType.HOME) {
@@ -99,7 +117,7 @@ public class PersonRelationService {
     }
 
     public void removePersonAddress(UUID personUid, UUID addressUid, OffsetDateTime validTo) {
-        OffsetDateTime now         = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
         PersonAddressEntity link =
@@ -143,15 +161,17 @@ public class PersonRelationService {
         // getAgreementUid() returns UUID directly
         UUID agreementUid = request.getAgreementUid();
         OffsetDateTime vf = request.getValidFrom() != null ? request.getValidFrom() : now;
-        OffsetDateTime vt = request.getValidTo()   != null ? request.getValidTo()   : BitemporalEntity.INFINITY;
+        OffsetDateTime vt = request.getValidTo() != null ? request.getValidTo() : BitemporalEntity.INFINITY;
 
         assertPersonExists(personUid, now, now);
         assertAgreementExists(agreementUid, now, now);
 
         personAgreementRepository.findLinkAtPoint(personUid, agreementUid, vf, now)
-                .ifPresent(e -> { throw new ConflictException(
-                        "Person %s is already linked to agreement %s at %s"
-                                .formatted(personUid, agreementUid, vf)); });
+                .ifPresent(e -> {
+                    throw new ConflictException(
+                            "Person %s is already linked to agreement %s at %s"
+                                    .formatted(personUid, agreementUid, vf));
+                });
 
         PersonAgreementEntity link = new PersonAgreementEntity();
         link.setPersonUid(personUid);
@@ -167,7 +187,7 @@ public class PersonRelationService {
     }
 
     public void removePersonAgreement(UUID personUid, UUID agreementUid, OffsetDateTime validTo) {
-        OffsetDateTime now         = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
         PersonAgreementEntity link =

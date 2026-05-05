@@ -19,21 +19,18 @@ import java.util.UUID;
 @Builder
 public class PersonAddressEntity extends BitemporalEntity {
 
-    public enum AddressType { HOME, WORK }
-
     @Column(name = "person_uid", nullable = false)
     private UUID personUid;
-
     @Column(name = "address_uid", nullable = false)
     private UUID addressUid;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "address_type", nullable = false, length = 4)
     private AddressType addressType;
-
     // Eagerly joined for response hydration — read-only, not cascaded
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_uid", referencedColumnName = "uid",
             insertable = false, updatable = false)
     private AddressEntity address;
+
+    public enum AddressType {HOME, WORK}
 }

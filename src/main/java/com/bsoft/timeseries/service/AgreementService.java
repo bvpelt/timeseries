@@ -8,8 +8,8 @@ import com.bsoft.timeseries.model.Agreement;
 import com.bsoft.timeseries.model.AgreementPage;
 import com.bsoft.timeseries.model.AgreementRequest;
 import com.bsoft.timeseries.repository.AgreementRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -20,18 +20,23 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class AgreementService {
 
     private final AgreementRepository agreementRepository;
-    private final AgreementMapper     agreementMapper;
+    private final AgreementMapper agreementMapper;
+
+    public AgreementService(AgreementRepository agreementRepository,
+                            @Qualifier("agreementMapperImpl") AgreementMapper agreementMapper) {
+        this.agreementRepository = agreementRepository;
+        this.agreementMapper = agreementMapper;
+    }
 
     public Agreement create(AgreementRequest request) {
         AgreementEntity entity = agreementMapper.toNewEntity(request);
         if (entity.getValidFrom() == null) entity.setValidFrom(OffsetDateTime.now());
-        if (entity.getValidTo()   == null) entity.setValidTo(BitemporalEntity.INFINITY);
+        if (entity.getValidTo() == null) entity.setValidTo(BitemporalEntity.INFINITY);
         AgreementEntity saved = agreementRepository.save(entity);
         log.info("Created agreement uid={}", saved.getUid());
         return agreementMapper.toDto(saved);
@@ -95,7 +100,7 @@ public class AgreementService {
     }
 
     public void terminate(UUID uid, OffsetDateTime validTo) {
-        OffsetDateTime now         = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
         AgreementEntity current = agreementRepository.findAtPoint(uid, now, now)

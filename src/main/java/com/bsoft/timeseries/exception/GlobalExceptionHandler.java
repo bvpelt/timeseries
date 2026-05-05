@@ -79,9 +79,9 @@ public class GlobalExceptionHandler {
                                                      String message,
                                                      List<String> details) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("status",    status.value());
-        body.put("error",     status.getReasonPhrase());
-        body.put("message",   message);
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("message", message);
         body.put("timestamp", OffsetDateTime.now().toString());
         if (!details.isEmpty()) {
             body.put("details", details);

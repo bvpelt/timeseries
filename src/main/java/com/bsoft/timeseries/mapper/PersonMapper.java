@@ -19,12 +19,12 @@ import java.util.UUID;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PersonMapper {
 
-    @Mapping(target = "uid",             source = "uid")
-    @Mapping(target = "dateOfBirth",     source = "dateOfBirth")
-    @Mapping(target = "validFrom",       source = "validFrom")
-    @Mapping(target = "validTo",         source = "validTo",         qualifiedByName = "nullIfInfinity")
+    @Mapping(target = "uid", source = "uid")
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth")
+    @Mapping(target = "validFrom", source = "validFrom")
+    @Mapping(target = "validTo", source = "validTo", qualifiedByName = "nullIfInfinity")
     @Mapping(target = "transactionFrom", source = "transactionFrom")
-    @Mapping(target = "transactionTo",   source = "transactionTo",   qualifiedByName = "nullIfInfinity")
+    @Mapping(target = "transactionTo", source = "transactionTo", qualifiedByName = "nullIfInfinity")
     Person toDto(PersonEntity entity);
 
     List<Person> toDtoList(List<PersonEntity> entities);
@@ -36,20 +36,20 @@ public interface PersonMapper {
      * subclass itself.
      */
     @BeanMapping(builder = @Builder(disableBuilder = true))
-    @Mapping(target = "id",              ignore = true)
-    @Mapping(target = "uid",             ignore = true)
-    @Mapping(target = "createdAt",       ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uid", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "transactionFrom", ignore = true)
-    @Mapping(target = "transactionTo",   ignore = true)
-    @Mapping(target = "dateOfBirth",     source = "dateOfBirth")
+    @Mapping(target = "transactionTo", ignore = true)
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth")
     PersonEntity toNewEntity(PersonRequest request);
 
-    @Mapping(target = "id",              ignore = true)
-    @Mapping(target = "uid",             ignore = true)
-    @Mapping(target = "createdAt",       ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uid", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "transactionFrom", ignore = true)
-    @Mapping(target = "transactionTo",   ignore = true)
-    @Mapping(target = "dateOfBirth",     source = "dateOfBirth")
+    @Mapping(target = "transactionTo", ignore = true)
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth")
     void updateEntity(PersonRequest request, @MappingTarget PersonEntity entity);
 
     @Named("nullIfInfinity")

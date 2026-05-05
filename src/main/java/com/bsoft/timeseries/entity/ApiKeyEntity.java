@@ -31,7 +31,9 @@ public class ApiKeyEntity {
     @Builder.Default
     private UUID uid = UUID.randomUUID();
 
-    /** SHA-256 hex digest of the raw API key. */
+    /**
+     * SHA-256 hex digest of the raw API key.
+     */
     @Column(name = "key_hash", nullable = false, unique = true, length = 64)
     private String keyHash;
 
@@ -53,7 +55,9 @@ public class ApiKeyEntity {
     @Column(name = "expires_at")
     private OffsetDateTime expiresAt;
 
-    /** Returns true when the key is usable: active and not expired. */
+    /**
+     * Returns true when the key is usable: active and not expired.
+     */
     public boolean isValid() {
         return active && (expiresAt == null || expiresAt.isAfter(OffsetDateTime.now()));
     }

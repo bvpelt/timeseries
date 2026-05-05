@@ -20,19 +20,23 @@ public class ApiKeyAuthentication extends AbstractAuthenticationToken {
 
     public ApiKeyAuthentication(String rawApiKey, ApiKeyPermission permission) {
         super(List.of(new SimpleGrantedAuthority(permission.name())));
-        this.rawApiKey  = rawApiKey;
+        this.rawApiKey = rawApiKey;
         this.permission = permission;
         // Mark as fully authenticated — the filter has already validated the key.
         super.setAuthenticated(true);
     }
 
-    /** Returns the raw API key value (treated as credentials). */
+    /**
+     * Returns the raw API key value (treated as credentials).
+     */
     @Override
     public Object getCredentials() {
         return rawApiKey;
     }
 
-    /** Returns the raw API key value (used as principal identifier). */
+    /**
+     * Returns the raw API key value (used as principal identifier).
+     */
     @Override
     public Object getPrincipal() {
         return rawApiKey;

@@ -14,28 +14,28 @@ import java.util.UUID;
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AddressMapper {
 
-    @Mapping(target = "uid",             source = "uid")
-    @Mapping(target = "validFrom",       source = "validFrom")
-    @Mapping(target = "validTo",         expression = "java(nullIfInfinity(entity.getValidTo()))")
+    @Mapping(target = "uid", source = "uid")
+    @Mapping(target = "validFrom", source = "validFrom")
+    @Mapping(target = "validTo", expression = "java(nullIfInfinity(entity.getValidTo()))")
     @Mapping(target = "transactionFrom", source = "transactionFrom")
-    @Mapping(target = "transactionTo",   expression = "java(nullIfInfinity(entity.getTransactionTo()))")
+    @Mapping(target = "transactionTo", expression = "java(nullIfInfinity(entity.getTransactionTo()))")
     Address toDto(AddressEntity entity);
 
     List<Address> toDtoList(List<AddressEntity> entities);
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
-    @Mapping(target = "id",              ignore = true)
-    @Mapping(target = "uid",             ignore = true)
-    @Mapping(target = "createdAt",       ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uid", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "transactionFrom", ignore = true)
-    @Mapping(target = "transactionTo",   ignore = true)
+    @Mapping(target = "transactionTo", ignore = true)
     AddressEntity toNewEntity(AddressRequest request);
 
-    @Mapping(target = "id",              ignore = true)
-    @Mapping(target = "uid",             ignore = true)
-    @Mapping(target = "createdAt",       ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "uid", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "transactionFrom", ignore = true)
-    @Mapping(target = "transactionTo",   ignore = true)
+    @Mapping(target = "transactionTo", ignore = true)
     void updateEntity(AddressRequest request, @MappingTarget AddressEntity entity);
 
     @Named("nullIfInfinity")

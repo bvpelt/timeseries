@@ -27,11 +27,28 @@ public class ApiKeyService {
     private final ApiKeyRepository apiKeyRepository;
 
     /**
+     * Computes the lowercase hex SHA-256 digest of the input string (UTF-8).
+     * Package-private for unit testing.
+     */
+    static String sha256Hex(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            // SHA-256 is mandated by the Java spec — this cannot happen in practice.
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
+    }
+
+    // ---------------------------------------------------------------
+
+    /**
      * Looks up the permission level for a raw API key.
      *
      * @param rawKey the value from the {@code X-API-Key} request header
      * @return an {@link Optional} containing the permission, or empty if the key
-     *         is unknown, inactive, or expired
+     * is unknown, inactive, or expired
      */
     @Transactional(readOnly = true)
     public Optional<ApiKeyPermission> resolve(String rawKey) {
@@ -51,22 +68,5 @@ public class ApiKeyService {
         ApiKeyPermission permission = entity.get().getPermission();
         log.debug("API key resolved — permission: {}", permission);
         return Optional.of(permission);
-    }
-
-    // ---------------------------------------------------------------
-
-    /**
-     * Computes the lowercase hex SHA-256 digest of the input string (UTF-8).
-     * Package-private for unit testing.
-     */
-    static String sha256Hex(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] bytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(bytes);
-        } catch (NoSuchAlgorithmException e) {
-            // SHA-256 is mandated by the Java spec — this cannot happen in practice.
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
     }
 }

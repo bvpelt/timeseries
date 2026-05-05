@@ -8,8 +8,10 @@ import com.bsoft.timeseries.model.Address;
 import com.bsoft.timeseries.model.AddressPage;
 import com.bsoft.timeseries.model.AddressRequest;
 import com.bsoft.timeseries.repository.AddressRepository;
-import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -24,18 +26,24 @@ import java.util.UUID;
  * the explanation of why the Lombok builder is avoided here.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class AddressService {
 
     private final AddressRepository addressRepository;
-    private final AddressMapper     addressMapper;
+    private final AddressMapper addressMapper;
+
+    // Handmatige constructor ipv @RequiredArgsConstructor om @Qualifier toe te voegen
+    public AddressService(AddressRepository addressRepository,
+                          @Qualifier("addressMapperImpl") AddressMapper addressMapper) {
+        this.addressRepository = addressRepository;
+        this.addressMapper = addressMapper;
+    }
 
     public Address create(AddressRequest request) {
         AddressEntity entity = addressMapper.toNewEntity(request);
         if (entity.getValidFrom() == null) entity.setValidFrom(OffsetDateTime.now());
-        if (entity.getValidTo()   == null) entity.setValidTo(BitemporalEntity.INFINITY);
+        if (entity.getValidTo() == null) entity.setValidTo(BitemporalEntity.INFINITY);
         AddressEntity saved = addressRepository.save(entity);
         log.info("Created address uid={}", saved.getUid());
         return addressMapper.toDto(saved);
@@ -99,7 +107,7 @@ public class AddressService {
     }
 
     public void terminate(UUID uid, OffsetDateTime validTo) {
-        OffsetDateTime now         = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime effectiveTo = validTo != null ? validTo : now;
 
         AddressEntity current = addressRepository.findAtPoint(uid, now, now)

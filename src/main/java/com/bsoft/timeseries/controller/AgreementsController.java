@@ -1,6 +1,7 @@
-package com.bsoft.timeseries.delegate;
+package com.bsoft.timeseries.controller;
 
-import com.bsoft.timeseries.api.AgreementsApiDelegate;
+import com.bsoft.timeseries.api.AddressesApi;
+import com.bsoft.timeseries.api.AgreementsApi;
 import com.bsoft.timeseries.model.Agreement;
 import com.bsoft.timeseries.model.AgreementPage;
 import com.bsoft.timeseries.model.AgreementRequest;
@@ -8,18 +9,18 @@ import com.bsoft.timeseries.service.AgreementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.bsoft.timeseries.delegate.DelegateSupport.*;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
-@Component
+@RestController
 @RequiredArgsConstructor
-public class AgreementsApiDelegateImpl implements AgreementsApiDelegate {
-
+public class AgreementsController implements AgreementsApi {
     private final AgreementService agreementService;
 
     @Override
@@ -68,3 +69,4 @@ public class AgreementsApiDelegateImpl implements AgreementsApiDelegate {
         return ResponseEntity.ok(agreementService.history(agreementId));
     }
 }
+

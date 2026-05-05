@@ -1,28 +1,34 @@
 package com.bsoft.timeseries.delegate;
 
 import com.bsoft.timeseries.api.PersonsApiDelegate;
-import com.bsoft.timeseries.model.*;
+import com.bsoft.timeseries.model.Person;
+import com.bsoft.timeseries.model.PersonPage;
+import com.bsoft.timeseries.model.PersonRequest;
 import com.bsoft.timeseries.service.PersonService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.bsoft.timeseries.delegate.DelegateSupport.*;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
+import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
 /**
  * Implements PersonsApiDelegate — person CRUD + history only.
- *
+ * <p>
  * The person-relations endpoints (addresses, agreements on a person) are
  * tagged "person-relations" in the OpenAPI spec, so the generator placed
  * them in PersonRelationsApiDelegate. They are implemented in
  * PersonRelationsApiDelegateImpl.
  */
-@Component
+/*
+@Service("mainPersonsApiDelegate")
+@Primary
 @RequiredArgsConstructor
 public class PersonsApiDelegateImpl implements PersonsApiDelegate {
 
@@ -66,4 +72,8 @@ public class PersonsApiDelegateImpl implements PersonsApiDelegate {
     public ResponseEntity<List<Person>> getPersonHistory(UUID personId) {
         return ResponseEntity.ok(personService.history(personId));
     }
+
+
 }
+
+ */

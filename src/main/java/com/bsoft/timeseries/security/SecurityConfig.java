@@ -4,6 +4,7 @@ import com.bsoft.timeseries.security.ApiKeyAuthFilter;
 import com.bsoft.timeseries.security.ApiKeyService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public ApiKeyAuthFilter apiKeyAuthFilter(ApiKeyService apiKeyService) {
+    public ApiKeyAuthFilter apiKeyAuthFilter(@Lazy ApiKeyService apiKeyService) {
         return new ApiKeyAuthFilter(apiKeyService);
     }
 
@@ -72,13 +73,13 @@ public class SecurityConfig {
                         .hasAnyAuthority("READ", "READ_WRITE")
 
                         // Mutating operations: READ_WRITE only
-                        .requestMatchers(HttpMethod.POST,   "/api/v1/**")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/**")
                         .hasAuthority("READ_WRITE")
-                        .requestMatchers(HttpMethod.PUT,    "/api/v1/**")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/**")
                         .hasAuthority("READ_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/**")
                         .hasAuthority("READ_WRITE")
-                        .requestMatchers(HttpMethod.PATCH,  "/api/v1/**")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/**")
                         .hasAuthority("READ_WRITE")
 
                         // Everything else requires authentication
