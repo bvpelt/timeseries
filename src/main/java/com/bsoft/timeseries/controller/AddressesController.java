@@ -8,6 +8,7 @@ import com.bsoft.timeseries.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
+@RequestMapping("${application.basePath}")
 @RestController
 @RequiredArgsConstructor
 public class AddressesController implements AddressesApi {

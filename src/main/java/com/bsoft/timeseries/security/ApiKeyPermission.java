@@ -19,5 +19,10 @@ public enum ApiKeyPermission {
     /**
      * No access — all requests are denied (effectively a revoked key).
      */
-    NO_ACCESS
+    NO_ACCESS,
+
+    /**
+     * ADMIN - Can create new API KEYS
+     */
+    ADMIN
 }
