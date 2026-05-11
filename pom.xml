@@ -47,6 +47,23 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- ===== JWT ====== -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+
 		<!-- ===== DATA ===== -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -114,6 +131,23 @@
 			<artifactId>spring-boot-starter-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -127,19 +161,19 @@
 				<version>${openapi-generator.version}</version>
 				<executions>
 					<execution>
-						<id>generate-api</id>
+						<id>generate-api-timeseries</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
 							<inputSpec>${project.basedir}/src/main/resources/openapi/openapi.yaml</inputSpec>
 							<generatorName>spring</generatorName>
-							<apiPackage>com.bsoft.timeseries.api</apiPackage>
-							<modelPackage>com.bsoft.timeseries.model</modelPackage>
-							<generateApiTests>false</generateApiTests>
-							<generateModelTests>false</generateModelTests>
-							<generateApiDocumentation>false</generateApiDocumentation>
-							<generateModelDocumentation>false</generateModelDocumentation>
+							<apiPackage>com.bsoft.timeseries.timeseries.api</apiPackage>
+							<modelPackage>com.bsoft.timeseries.timeseries.model</modelPackage>
+							<generateApiTests>true</generateApiTests>
+							<generateModelTests>true</generateModelTests>
+							<generateApiDocumentation>true</generateApiDocumentation>
+							<generateModelDocumentation>true</generateModelDocumentation>
 							<output>${generated-sources-path}</output>
 							<configOptions>
 								<!-- Use delegate pattern: generated controller delegates to our impl -->
@@ -164,6 +198,86 @@
 							</configOptions>
 						</configuration>
 					</execution>
+
+					<execution>
+						<id>generate-api-login</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/openapi/login.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>com.bsoft.timeseries.login.api</apiPackage>
+							<modelPackage>com.bsoft.timeseries.login.model</modelPackage>
+							<generateApiTests>true</generateApiTests>
+							<generateModelTests>true</generateModelTests>
+							<generateApiDocumentation>true</generateApiDocumentation>
+							<generateModelDocumentation>true</generateModelDocumentation>
+							<output>${generated-sources-path}</output>
+							<configOptions>
+								<!-- Use delegate pattern: generated controller delegates to our impl -->
+								<delegatePattern>true</delegatePattern>
+								<!-- Spring Boot 3/4 compatible (Jakarta EE 9+) -->
+								<useSpringBoot3>true</useSpringBoot3>
+								<useJakartaEe>true</useJakartaEe>
+								<!-- Use java.time classes -->
+								<dateLibrary>java8</dateLibrary>
+								<!-- Group by OpenAPI tag name -->
+								<useTags>true</useTags>
+								<!-- Generate interfaces, not full controller implementations -->
+								<interfaceOnly>true</interfaceOnly>
+								<!-- Add Bean Validation annotations to model -->
+								<useBeanValidation>true</useBeanValidation>
+								<!-- Use @SpringBootApplication-friendly component scan -->
+								<basePackage>com.bsoft.timeseries</basePackage>
+								<!-- Do NOT inject Lombok annotations onto generated model classes:
+                                     the generator already emits its own constructors/getters/setters.
+                                     Adding @NoArgsConstructor / @AllArgsConstructor here causes
+                                     "constructor already defined" compile errors. -->
+							</configOptions>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>generate-api-authentication</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/openapi/authentication.yaml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>com.bsoft.timeseries.authentication.api</apiPackage>
+							<modelPackage>com.bsoft.timeseries.authentication.model</modelPackage>
+							<generateApiTests>true</generateApiTests>
+							<generateModelTests>true</generateModelTests>
+							<generateApiDocumentation>true</generateApiDocumentation>
+							<generateModelDocumentation>true</generateModelDocumentation>
+							<output>${generated-sources-path}</output>
+							<configOptions>
+								<!-- Use delegate pattern: generated controller delegates to our impl -->
+								<delegatePattern>true</delegatePattern>
+								<!-- Spring Boot 3/4 compatible (Jakarta EE 9+) -->
+								<useSpringBoot3>true</useSpringBoot3>
+								<useJakartaEe>true</useJakartaEe>
+								<!-- Use java.time classes -->
+								<dateLibrary>java8</dateLibrary>
+								<!-- Group by OpenAPI tag name -->
+								<useTags>true</useTags>
+								<!-- Generate interfaces, not full controller implementations -->
+								<interfaceOnly>true</interfaceOnly>
+								<!-- Add Bean Validation annotations to model -->
+								<useBeanValidation>true</useBeanValidation>
+								<!-- Use @SpringBootApplication-friendly component scan -->
+								<basePackage>com.bsoft.timeseries</basePackage>
+								<!-- Do NOT inject Lombok annotations onto generated model classes:
+                                     the generator already emits its own constructors/getters/setters.
+                                     Adding @NoArgsConstructor / @AllArgsConstructor here causes
+                                     "constructor already defined" compile errors. -->
+							</configOptions>
+						</configuration>
+					</execution>
+
+
 				</executions>
 			</plugin>
 
@@ -228,6 +342,27 @@
 				</configuration>
 			</plugin>
 
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>get-mockito-agent-path</id>
+						<goals>
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

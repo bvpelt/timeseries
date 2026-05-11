@@ -1,8 +1,9 @@
 package com.bsoft.timeseries.mapper;
 
 import com.bsoft.timeseries.entity.PersonAddressEntity;
-import com.bsoft.timeseries.model.AddressType;
-import com.bsoft.timeseries.model.PersonAddress;
+
+import com.bsoft.timeseries.timeseries.model.AddressType;
+import com.bsoft.timeseries.timeseries.model.PersonAddress;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

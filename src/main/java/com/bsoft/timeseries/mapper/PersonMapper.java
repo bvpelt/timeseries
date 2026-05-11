@@ -2,8 +2,8 @@ package com.bsoft.timeseries.mapper;
 
 import com.bsoft.timeseries.entity.BitemporalEntity;
 import com.bsoft.timeseries.entity.PersonEntity;
-import com.bsoft.timeseries.model.Person;
-import com.bsoft.timeseries.model.PersonRequest;
+import com.bsoft.timeseries.timeseries.model.Person;
+import com.bsoft.timeseries.timeseries.model.PersonRequest;
 import org.mapstruct.*;
 
 import java.time.OffsetDateTime;

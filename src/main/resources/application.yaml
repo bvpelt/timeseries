@@ -1,6 +1,11 @@
 application:
   basePath: "/api/v1"
 
+jwt:
+  key: "9dd059be604f3e0b8742724eae817a49d4561fe22bf3519d10d7431dd4b188e4" # using jwtsecret.com/generate 32 bytes 256 bits
+  key-lifetime: 1000000 # ms
+  basePath: "/api/v2"
+
 spring:
   application:
     name: timeseries
@@ -78,7 +83,13 @@ springdoc:
     try-it-out-enabled: true
     disable-swagger-default-url: false
   # Point to the hand-crafted spec, not the auto-generated one
-  swagger-ui.url: /api-docs/openapi.yaml
+    urls:
+      - name: timeseries
+        url: /v3/api-docs/timeseries
+      - name: login
+        url: /v3/api-docs/login
+      - name: authentication
+        url: /v3/api-docs/authentication
 
 # ===== LOGGING =====
 logging:
@@ -129,8 +140,12 @@ management:
     port: 8080
 
 openapi:
-  bitemporalPersonAddressAgreementService:
-    base-path: /api/v1
+  timeseries:
+    base-path: /api/v1/timeseries
+  login:
+    base-path: /api/v1/login
+  auth:
+    base-path: /api/v1/auth
 
 
 # ===== APPLICATION PROPERTIES =====
@@ -141,3 +156,10 @@ app:
   security:
     api-key:
       header-name: X-API-Key
+
+info:
+  project:
+    name: ${spring.application.name}
+    version: @project.version@
+    description: @project.description@
+  environment: ${spring.profiles.active}

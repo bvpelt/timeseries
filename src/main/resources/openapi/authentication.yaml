@@ -1,0 +1,1112 @@
+openapi: "3.0.3"
+info:
+  title: Authentication API
+  description: |
+    REST API for managing users, roles and permissions
+
+    ## Access 
+    All requests must include the JWT bearer token
+
+  version: "1.0.0"
+  contact:
+    name: "BSoft Development Team"
+
+servers:
+  - url: "http://localhost:8080/{basePath}"
+    description: "development"
+    variables:
+      basePath:
+        default: "/api/auth/v1"
+  - url: "https://api.example.com/{basePath}"
+    description: "production"
+    variables:
+      basePath:
+        default: "/api/auth/v1"
+
+security:
+  - bearerAuth: [ ]
+
+tags:
+  - name: Roles
+    description: "The roles a user can have"
+  - name: Users
+    description: |
+      The users who have special access
+
+paths:
+  /privileges:
+    get:
+      tags:
+        - Privileges
+      summary: Retrieve all known privileges
+      description: |
+        Retrieve all known privileges, using paging and sorting
+      operationId: getPrivileges
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+        - $ref: "#/components/parameters/sort"
+      responses:
+        '200':
+          $ref: "#/components/responses/PagedPrivileges"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    delete:
+      tags:
+        - Privileges
+      summary: Delete all privileges
+      description: |
+        Delete all privileges
+      operationId: deleteAllPrivileges
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Privileges
+      summary: Create a new privilege
+      description: |
+        Create a new privileges
+        To determine if an privileges is new the input is compared on the hash value of:
+        - name        
+        If the hash value already exists in the backend, the role is considered to exist
+      operationId: postPrivileges
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivilegeBody"
+            examples:
+              privilege:
+                $ref: "#/components/examples/PrivilegeBody"
+      responses:
+        '201':
+          $ref: "#/components/responses/Privilege"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+  /privileges/{id}:
+    get:
+      tags:
+        - Privileges
+      summary: Retrieve the specified privilege
+      description: |
+        Retrieve only one privilege with id privilegeId
+      operationId: getPrivilege
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '200':
+          $ref: "#/components/responses/Privilege"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    delete:
+      tags:
+        - Privileges
+      summary: Delete the specified privilege
+      description: |
+        Delete only the specified privilege
+      operationId: deletePrivilege
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    patch:
+      tags:
+        - Privileges
+      summary: Update the specified privilege
+      description: |
+        Update only the privilege specified with privilegeId
+      operationId: patchPrivilege
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrivilegeBody"
+            examples:
+              privilege:
+                $ref: "#/components/examples/PrivilegeBody"
+      responses:
+        '200':
+          $ref: "#/components/responses/Privilege"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: Retrieve all known roles
+      description: |
+        Retrieve all known roles, using paging and sorting
+      operationId: getRoles
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+        - $ref: "#/components/parameters/sort"
+      responses:
+        '200':
+          $ref: "#/components/responses/PagedRoles"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    delete:
+      tags:
+        - Roles
+      summary: Delete all roles
+      description: |
+        Delete all roles
+      operationId: deleteAllRoles
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    post:
+      tags:
+        - Roles
+      summary: Create a new role
+      description: |
+        Create a new role
+        To determine if an role is new the input is compared on the hash value of:
+        - rolename
+        - description
+        If the hash value already exists in the backend, the role is considered to exist
+      operationId: postRole
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleBody"
+            examples:
+              adres:
+                $ref: "#/components/examples/RoleBody"
+      responses:
+        '201':
+          $ref: "#/components/responses/Role"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+  /roles/{id}:
+    get:
+      tags:
+        - Roles
+      summary: Retrieve the specified role
+      description: |
+        Retrieve only one role with id roleId
+      operationId: getRole
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '200':
+          $ref: "#/components/responses/Role"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    delete:
+      tags:
+        - Roles
+      summary: Delete the specified role
+      description: |
+        Delete only the specified role
+      operationId: deleteRole
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    patch:
+      tags:
+        - Roles
+      summary: Update the specified role
+      description: |
+        Update only the role specified with roleId
+      operationId: patchRole
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleBody"
+            examples:
+              role:
+                $ref: "#/components/examples/RoleBody"
+      responses:
+        '200':
+          $ref: "#/components/responses/Role"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Retrieve all known users
+      description: |
+        Retrieve all known users, using paging and sorting
+      operationId: getUsers
+      parameters:
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/size"
+        - $ref: "#/components/parameters/sort"
+      responses:
+        '200':
+          $ref: "#/components/responses/PagedUsers"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+    delete:
+      tags:
+        - Users
+      summary: Delete all
+      description: |
+        Delete all users
+      operationId: deleteAllUsers
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: |
+        Create a new user
+        To determine if an user is new the input is compared on the hash value of:
+        - username
+        - password
+        - email
+        - phone
+        If the hash value already exists in the backend, the user is considered to exist
+      operationId: postUser
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserBody"
+            examples:
+              adres:
+                $ref: "#/components/examples/UserBody"
+      responses:
+        '201':
+          $ref: "#/components/responses/User"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Retrieve the specified user
+      description: |
+        Retrieve only one user with id userId
+      operationId: getUser
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '200':
+          $ref: "#/components/responses/User"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Users
+      summary: Delete the specified user
+      description: |
+        Delete only the specified user
+      operationId: deleteUser
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        '204':
+          $ref: "#/components/responses/Deleted"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+    patch:
+      tags:
+        - Users
+      summary: Update the specified user
+      description: |
+        Update only the user specified with userId
+      operationId: patchUser
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        description: Request parameters
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserBody"
+            examples:
+              user:
+                $ref: "#/components/examples/UserBody"
+      responses:
+        '200':
+          $ref: "#/components/responses/User"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+components:
+  examples:
+
+    Deleted:
+      summary: An entry is deleted succesfull
+      value:
+
+    PagedPrivilegesList-01:
+      summary: An empty list of privileges
+      value:
+        content: [ ]
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 0,
+        totalPages: 0
+
+    PagedPrivilegesList-02:
+      summary: A list of privileges
+      value:
+        content:
+          - id: 1
+            name: "ALL"
+          - id: 2
+            name: "USER"
+          - id: 3
+            name: "DEVELOPER"
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 3,
+        totalPages: 1
+
+    PagedRolesList-01:
+      summary: An empty list of roles
+      value:
+        content: [ ]
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 0,
+        totalPages: 0
+
+    PagedRolesList-02:
+      summary: A list of roles
+      value:
+        content:
+          - id: 1
+            rolename: "READER"
+            description: |
+              "Read access to resources"
+            privileges:
+              - id: 1
+                name: "USER"
+          - id: 2
+            rolename: "WRITER"
+            description: |
+              "Read and writeaccess to resources"
+            privileges:
+              - id: 2
+                name: "USER"
+          - id: 3
+            rolename: "ADMIN"
+            description: |
+              "FULL access to resources"
+            privileges:
+              - id: 3
+                name: "ALL"
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 3,
+        totalPages: 1
+
+    PagedUsersList-01:
+      summary: An empty list of users
+      value:
+        content: [ ]
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 0,
+        totalPages: 0
+
+    PagedUsersList-02:
+      summary: A list of users
+      value:
+        content:
+          - id: 1
+            username: "Peter"
+            password: "9494$((DKD))"
+            email: "peter@gmail.com"
+            phone: "+31694032930"
+            accountNonExpired: true
+            accountNonLocked: true
+            credentialsNonExpired: true
+            enabled: true
+            roles:
+              - id: 1
+                rolename: "READER"
+                description: |
+                  "Read access to resources"
+                privileges:
+                  - id: 1
+                    name: "USER"
+          - id: 2
+            username: "John"
+            password: "9494$((DKD))"
+            email: "john@gmail.com"
+            phone: "+31692332930"
+            accountNonExpired: true
+            accountNonLocked: true
+            credentialsNonExpired: true
+            enabled: true
+            roles:
+              - id: 2
+                rolename: "WRITER"
+                description: |
+                  "Read and writeaccess to resources"
+                privileges:
+                  - id: 2
+                    name: "USER"
+          - id: 3
+            username: "Charles"
+            password: "9494$((DKD))"
+            email: "charles@gmail.com"
+            phone: "+31694039492"
+            accountNonExpired: true
+            accountNonLocked: true
+            credentialsNonExpired: true
+            enabled: true
+            roles:
+              - id: 3
+                roles:
+                rolename: "ADMIN"
+                description: |
+                  "FULL access to resources"
+                privileges:
+                  - id: 3
+                    name: "ALL"
+        pageNumber: 0,
+        pageSize: 25,
+        totalElements: 3,
+        totalPages: 1
+
+    Privilege:
+      summary: A privilege
+      value:
+        id: 1
+        name: READ
+
+    PrivilegeBody:
+      summary: A new privilege
+      value:
+        name: READ
+
+    RoleBody:
+      summary: New Role definition
+      value:
+        rolename: JWT-TOKEN
+        description: The JWT-TOKEN can only be used for JWT authentication
+
+    Role:
+      summary: New Role definition
+      value:
+        id: 4
+        rolename: JWT-TOKEN
+        description: The JWT-TOKEN can only be used for JWT authentication
+
+    RoleList:
+      summary: List of known roles
+      value:
+        - id: 3
+          rolename: JWT-TOKEN
+          description: The JWT-TOKEN can only be used for JWT authentication
+        - id: 4
+          rolename: USER
+          description: The USER kan only read information
+
+    UserBody:
+      summary: New User definition
+      value:
+        username: "user"
+        password: "12345"
+        email: "user@gmail.com"
+        phone: "0687654321"
+        accountNonExpired: true
+        accountNonLocked: true
+        credentialsNonExpired: true
+        enabled: true
+        roles: [ ]
+
+    User:
+      summary: New user
+      value:
+        id: 5
+        username: "user"
+        password: "12345"
+        email: "user@gmail.com"
+        phone: "0687654321"
+        accountNonExpired: true
+        accountNonLocked: true
+        credentialsNonExpired: true
+        enabled: true
+        roles: [ ]
+
+    UserList:
+      summary: List of known users
+      value:
+        - id: 4
+          username: "user"
+          password: "12345"
+          email: "user@gmail.com"
+          phone: "0687654321"
+          accountNonExpired: true
+          accountNonLocked: true
+          credentialsNonExpired: true
+          enabled: true
+          roles: [ ]
+        - id: 5
+          username: "tester"
+          password: "12345"
+          email: "tester@gmail.com"
+          phone: "0687654321"
+          accountNonExpired: true
+          accountNonLocked: true
+          credentialsNonExpired: true
+          enabled: true
+          roles: [ ]
+
+  headers:
+    version:
+      required: true
+      schema:
+        type: "string"
+      example: "1.0.0"
+
+  parameters:
+    id:
+      name: "id"
+      in: "path"
+      description: "The identification of the resource to return"
+      required: true
+      schema:
+        type: "integer"
+        format: "int64"
+
+    override:
+      name: "override"
+      in: "query"
+      description: "parameter to override check on existence"
+      required: true
+      schema:
+        type: "boolean"
+        default: false
+
+    page:
+      name: "page"
+      in: "query"
+      description: "pagenumber starts on 1"
+      required: true
+      schema:
+        type: "integer"
+        minimum: 1
+        default: 1
+        format: "int32"
+
+    size:
+      name: "size"
+      in: "query"
+      description: |
+        number of elements on each page
+        - minimum    1
+        - default   25
+        - maximum: 100
+      required: true
+      schema:
+        type: "integer"
+        maximum: 100
+        default: 25
+        minimum: 1
+        format: "int32"
+
+    sort:
+      name: "sort"
+      in: "query"
+      description: "field names to sort on"
+      schema:
+        type: "array"
+        items:
+          type: "string"
+        default: [ ]
+
+    X-API-KEY:
+      name: "X-API-KEY"
+      in: "header"
+      required: true
+      description: "An api key used to track usage of the api"
+      schema:
+        $ref: "#/components/schemas/X-API-KEY"
+
+  schemas:
+
+    Id:
+      type: integer
+      format: int64
+      example: 1
+
+    PagedPrivileges:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Privilege"
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalElements:
+          type: number
+          format: int64
+        totalPages:
+          type: integer
+
+    PagedRoles:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Role"
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalElements:
+          type: number
+          format: int64
+        totalPages:
+          type: integer
+
+    PagedUsers:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalElements:
+          type: number
+          format: int64
+        totalPages:
+          type: integer
+
+    Role:
+      allOf:
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: "#/components/schemas/Id"
+        - $ref: "#/components/schemas/RoleBody"
+
+    RoleBody:
+      type: object
+      required:
+        - rolename
+      properties:
+        rolename:
+          type: string
+          maxLength: 32
+          example: reader
+        description:
+          type: string
+          maxLength: 128
+          example: This role gives read access
+        privileges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Privilege"
+          default: [ ]
+
+    Roles:
+      type: array
+      items:
+        $ref: "#/components/schemas/Role"
+
+    User:
+      allOf:
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: "#/components/schemas/Id"
+        - $ref: "#/components/schemas/UserBody"
+
+    UserBody:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        username:
+          $ref: "./common.yaml#/components/schemas/Username"
+        password:
+          $ref: "./common.yaml#/components/schemas/Password"
+        email:
+          $ref: "./common.yaml#/components/schemas/Email"
+        phone:
+          $ref: "#/components/schemas/Phone"
+        accountNonExpired:
+          type: boolean
+          default: true
+          example: true
+        accountNonLocked:
+          type: boolean
+          default: true
+          example: true
+        credentialsNonExpired:
+          type: boolean
+          default: true
+          example: true
+        enabled:
+          type: boolean
+          default: true
+          example: true
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Role"
+          default: [ ]
+
+    Username:
+      type: string
+      maxLength: 24
+      example: user
+
+    Users:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+
+    Phone:
+      type: string
+      maxLength: 24
+      example: "+316409493445"
+
+    Privilege:
+      allOf:
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: "#/components/schemas/Id"
+        - $ref: "#/components/schemas/PrivilegeBody"
+
+    PrivilegeBody:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+
+    ProblemDetail:
+      type: object
+      required:
+        - status
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+
+    X-API-KEY:
+      type: string
+      pattern: "^([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})"
+
+  responses:
+
+    Deleted:
+      description: Resource deleted
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+
+    PagedPrivileges:
+      description: A collection of privilege pages
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PagedPrivileges"
+          examples:
+            emptylist:
+              $ref: "#/components/examples/PagedPrivilegesList-01"
+            fulllist:
+              $ref: "#/components/examples/PagedPrivilegesList-02"
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    PagedRoles:
+      description: A collection of roles pages
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PagedRoles"
+          examples:
+            emptylist:
+              $ref: "#/components/examples/PagedRolesList-01"
+            fulllist:
+              $ref: "#/components/examples/PagedRolesList-02"
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    PagedUsers:
+      description: A collection of person pages
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PagedUsers"
+          examples:
+            emptylist:
+              $ref: "#/components/examples/PagedUsersList-01"
+            fulllist:
+              $ref: "#/components/examples/PagedUsersList-02"
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+
+    Privilege:
+      description: A privilege
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Privilege"
+          examples:
+            allfields:
+              $ref: "#/components/examples/Privilege"
+
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    Role:
+      description: A role
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Role"
+          examples:
+            allfields:
+              $ref: "#/components/examples/Role"
+
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    Roles:
+      description: A collection of roles
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Roles"
+          examples:
+            emptylist:
+              $ref: "#/components/examples/RoleList"
+
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    User:
+      description: An user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/User"
+          examples:
+            allfields:
+              $ref: "#/components/examples/User"
+
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+    Users:
+      description: A collection of users
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Users"
+          examples:
+            emptylist:
+              $ref: "#/components/examples/UserList"
+
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

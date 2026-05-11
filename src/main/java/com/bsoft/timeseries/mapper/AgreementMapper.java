@@ -2,9 +2,10 @@ package com.bsoft.timeseries.mapper;
 
 import com.bsoft.timeseries.entity.AgreementEntity;
 import com.bsoft.timeseries.entity.BitemporalEntity;
-import com.bsoft.timeseries.model.Agreement;
-import com.bsoft.timeseries.model.AgreementRequest;
-import com.bsoft.timeseries.model.AgreementState;
+
+import com.bsoft.timeseries.timeseries.model.Agreement;
+import com.bsoft.timeseries.timeseries.model.AgreementRequest;
+import com.bsoft.timeseries.timeseries.model.AgreementState;
 import org.mapstruct.*;
 
 import java.time.OffsetDateTime;

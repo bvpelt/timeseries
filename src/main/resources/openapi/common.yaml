@@ -1,0 +1,70 @@
+components:
+  schemas:
+
+    Email:
+      type: string
+      pattern: '^(.[^@]*)@(.[^@]*)\.(.[^@]*)$'
+      maxLength: 128
+      example: mymail@gmail.com
+
+    Password:
+      type: string
+      description: base64 encode password
+      maxLength: 48
+      example: kasjdkfkei
+
+    Username:
+      type: string
+      maxLength: 24
+      example: user
+
+    # ==================== ERRORS ====================
+    ApiError:
+      type: object
+      required: [ status, message, timestamp ]
+      properties:
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: array
+          items:
+            type: string
+
+  responses:
+    BadRequest:
+      description: Bad request — validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Unauthorized — missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: Forbidden — insufficient permissions for this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Resource not found at the requested bitemporal point
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: Conflict — resource already exists or constraint violated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'

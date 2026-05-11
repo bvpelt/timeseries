@@ -1,7 +1,8 @@
 package com.bsoft.timeseries.mapper;
 
 import com.bsoft.timeseries.entity.PersonAgreementEntity;
-import com.bsoft.timeseries.model.PersonAgreement;
+
+import com.bsoft.timeseries.timeseries.model.PersonAgreement;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

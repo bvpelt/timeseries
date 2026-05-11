@@ -4,11 +4,12 @@ import com.bsoft.timeseries.entity.AddressEntity;
 import com.bsoft.timeseries.entity.BitemporalEntity;
 import com.bsoft.timeseries.exception.ResourceNotFoundException;
 import com.bsoft.timeseries.mapper.AddressMapper;
-import com.bsoft.timeseries.model.Address;
-import com.bsoft.timeseries.model.AddressPage;
-import com.bsoft.timeseries.model.AddressRequest;
+
 import com.bsoft.timeseries.repository.AddressRepository;
 
+import com.bsoft.timeseries.timeseries.model.Address;
+import com.bsoft.timeseries.timeseries.model.AddressPage;
+import com.bsoft.timeseries.timeseries.model.AddressRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Qualifier;

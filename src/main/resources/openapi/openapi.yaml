@@ -52,6 +52,7 @@ paths:
       tags: [ persons ]
       operationId: listPersons
       summary: List persons at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -87,11 +88,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Person'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
 
   /persons/{personId}:
     parameters:
@@ -100,6 +101,7 @@ paths:
       tags: [ persons ]
       operationId: getPerson
       summary: Get a person at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -111,11 +113,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Person'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     put:
       tags: [ persons ]
@@ -135,13 +137,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Person'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     delete:
       tags: [ persons ]
@@ -160,11 +162,11 @@ paths:
         '204':
           description: Person valid period terminated
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /persons/{personId}/history:
     parameters:
@@ -173,6 +175,7 @@ paths:
       tags: [ persons ]
       operationId: getPersonHistory
       summary: Get the complete bitemporal history of a person
+      security: [ ]
       description: Returns all versions across both valid time and transaction time.
       responses:
         '200':
@@ -184,11 +187,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Person'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /persons/{personId}/addresses:
     parameters:
@@ -197,6 +200,7 @@ paths:
       tags: [ person-relations ]
       operationId: getPersonAddresses
       summary: Get addresses linked to a person at a given bitemporal point
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -210,11 +214,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/PersonAddress'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     post:
       tags: [ person-relations ]
@@ -234,15 +238,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/PersonAddress'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
         '409':
-          $ref: '#/components/responses/Conflict'
+          $ref: './common.yaml#/components/responses/Conflict'
 
   /persons/{personId}/addresses/{addressId}:
     parameters:
@@ -264,11 +268,11 @@ paths:
         '204':
           description: Relation terminated
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /persons/{personId}/agreements:
     parameters:
@@ -277,6 +281,7 @@ paths:
       tags: [ person-relations ]
       operationId: getPersonAgreements
       summary: Get agreements linked to a person at a given bitemporal point
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -290,11 +295,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/PersonAgreement'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     post:
       tags: [ person-relations ]
@@ -314,13 +319,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/PersonAgreement'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /persons/{personId}/agreements/{agreementId}:
     parameters:
@@ -341,11 +346,11 @@ paths:
         '204':
           description: Relation terminated
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   # ==================== ADDRESSES ====================
   /addresses:
@@ -353,6 +358,7 @@ paths:
       tags: [ addresses ]
       operationId: listAddresses
       summary: List addresses at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -366,9 +372,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddressPage'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
 
     post:
       tags: [ addresses ]
@@ -388,11 +394,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
 
   /addresses/{addressId}:
     parameters:
@@ -401,6 +407,7 @@ paths:
       tags: [ addresses ]
       operationId: getAddress
       summary: Get an address at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -412,11 +419,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     put:
       tags: [ addresses ]
@@ -436,13 +443,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Address'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     delete:
       tags: [ addresses ]
@@ -459,11 +466,11 @@ paths:
         '204':
           description: Address terminated
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /addresses/{addressId}/history:
     parameters:
@@ -472,6 +479,7 @@ paths:
       tags: [ addresses ]
       operationId: getAddressHistory
       summary: Get the complete bitemporal history of an address
+      security: [ ]
       responses:
         '200':
           description: Full bitemporal history
@@ -482,11 +490,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Address'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   # ==================== AGREEMENTS ====================
   /agreements:
@@ -494,6 +502,7 @@ paths:
       tags: [ agreements ]
       operationId: listAgreements
       summary: List agreements at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -507,9 +516,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/AgreementPage'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
 
     post:
       tags: [ agreements ]
@@ -529,11 +538,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Agreement'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
 
   /agreements/{agreementId}:
     parameters:
@@ -542,6 +551,7 @@ paths:
       tags: [ agreements ]
       operationId: getAgreement
       summary: Get an agreement at a given bitemporal point in time
+      security: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -553,11 +563,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Agreement'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     put:
       tags: [ agreements ]
@@ -577,13 +587,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Agreement'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
     delete:
       tags: [ agreements ]
@@ -600,11 +610,11 @@ paths:
         '204':
           description: Agreement terminated
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
   /agreements/{agreementId}/history:
     parameters:
@@ -613,6 +623,7 @@ paths:
       tags: [ agreements ]
       operationId: getAgreementHistory
       summary: Get the complete bitemporal history of an agreement
+      security: [ ]
       responses:
         '200':
           description: Full bitemporal history
@@ -623,11 +634,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Agreement'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: './common.yaml#/components/responses/Unauthorized'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: './common.yaml#/components/responses/Forbidden'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: './common.yaml#/components/responses/NotFound'
 
 components:
   securitySchemes:

@@ -1,10 +1,10 @@
 package com.bsoft.timeseries.controller;
 
-import com.bsoft.timeseries.api.PersonsApi;
-import com.bsoft.timeseries.model.Person;
-import com.bsoft.timeseries.model.PersonPage;
-import com.bsoft.timeseries.model.PersonRequest;
 import com.bsoft.timeseries.service.PersonService;
+import com.bsoft.timeseries.timeseries.api.PersonsApi;
+import com.bsoft.timeseries.timeseries.model.Person;
+import com.bsoft.timeseries.timeseries.model.PersonPage;
+import com.bsoft.timeseries.timeseries.model.PersonRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.UUID;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveTransactionAt;
 import static com.bsoft.timeseries.delegate.DelegateSupport.resolveValidAt;
 
-@RequestMapping("${openapi.bitemporalPersonAddressAgreementService.base-path}")
+@RequestMapping("${openapi.timeseries.base-path}")
 @RestController
 @RequiredArgsConstructor
 public class PersonsController implements PersonsApi {

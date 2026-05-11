@@ -1,0 +1,227 @@
+openapi: "3.0.3"
+info:
+  title: Login API
+  description: |
+    REST API for login to get JWT Token
+
+    ## Access 
+    Free access
+
+  version: "1.0.0"
+  contact:
+    name: "BSoft Development Team"
+
+servers:
+  - url: "http://localhost:8080/{basePath}"
+    description: "development"
+    variables:
+      basePath:
+        default: "/api/login/v1"
+  - url: "https://api.example.com/{basePath}"
+    description: "production"
+    variables:
+      basePath:
+        default: "/api/login/v1"
+
+tags:
+  - name: "Login"
+    description: "Login methods for basicauthentication or JWT tokens"
+
+paths:
+
+  /login/user:
+    post:
+      tags:
+        - Login
+      summary: "Login into the application"
+      security: [ ]
+      description: |
+        Login into the application by providing username password.
+      operationId: "postLogin"
+      requestBody:
+        description: "Request parameters"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              login:
+                $ref: "#/components/examples/LoginRequest"
+      responses:
+        '201':
+          $ref: "#/components/responses/LoginResponse"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+  /login/jwt/authenticate:
+    post:
+      tags:
+        - Login
+      summary: "Authenticate a user to get access to the resources"
+      security: [ ]
+      description: |
+        Authenticate a user and get a token which must be uses to access the resources
+      operationId: "postAuthenticate"
+      requestBody:
+        description: "Request parameters"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              loginrequest:
+                $ref: "#/components/examples/LoginRequest"
+      responses:
+        '201':
+          $ref: "#/components/responses/LoginResponse"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+  /login/jwt/register:
+    post:
+      tags:
+        - Login
+      summary: "Register for the application"
+      security: [ ]
+      description: |
+        Register for the application by providing username password. A JWT token will be returned an must be used as token for other calls
+      operationId: postRegister
+      requestBody:
+        description: "Request parameters"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              registerrequest:
+                $ref: "#/components/examples/LoginRequest"
+      responses:
+        '200':
+          $ref: "#/components/responses/LoginResponse"
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+
+
+components:
+  examples:
+
+    LoginResponseAllowed:
+      summary: "A login response with basicauthentication access allowed"
+      value:
+        authenticated: true
+
+    LoginJWTResponseAllowed:
+      summary: "A login response with basicauthentication and jwt access allowed"
+      value:
+        authenticated: true
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJwYXNzd29yZCI6Imthc2pkZmtlaSIsImVtYWlsIjoidXNlckBnbWFpbC5jb20iLCJwaG9uZSI6IiszMTY0MDk0OTM0NDUifQ.eO4foDxLy8Rg5EtKLGRTFItLD1y-B0iHHo-tjRyVLn0"
+
+    LoginRequest:
+      summary: "Login request"
+      value:
+        username: "jandegroot"
+        password: "432kdkakl43k"
+        email: "mymail@gmail.com"
+
+    LoginResponseDenied:
+      summary: "A login response with access denied"
+      value:
+        authenticated: false
+
+  headers:
+    version:
+      required: true
+      schema:
+        type: "string"
+      example: "1.0.0"
+
+  parameters:
+    id:
+      name: "id"
+      in: "path"
+      description: "The identification of the resource to return"
+      required: true
+      schema:
+        type: "integer"
+        format: "int64"
+
+    override:
+      name: "override"
+      in: "query"
+      description: "parameter to override check on existence"
+      required: true
+      schema:
+        type: "boolean"
+        default: false
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+        - email
+      properties:
+        username:
+          $ref: "./common.yaml#/components/schemas/Username"
+        password:
+          $ref: "./common.yaml#/components/schemas/Password"
+        email:
+          $ref: "./common.yaml#/components/schemas/Email"
+        phone:
+          type: string
+          example: "+31645978573"
+
+    LoginResponse:
+      type: object
+      required:
+        - authenticated
+      properties:
+        authenticated:
+          type: boolean
+          example: true
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJwYXNzd29yZCI6Imthc2pkZmtlaSIsImVtYWlsIjoidXNlckBnbWFpbC5jb20iLCJwaG9uZSI6IiszMTY0MDk0OTM0NDUifQ.eO4foDxLy8Rg5EtKLGRTFItLD1y-B0iHHo-tjRyVLn0"
+
+
+  responses:
+
+    LoginResponse:
+      description: The response on a login request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LoginResponse"
+          examples:
+            accessallowed:
+              $ref: "#/components/examples/LoginResponseAllowed"
+            accessjwtallowed:
+              $ref: "#/components/examples/LoginJWTResponseAllowed"
+            accessdenied:
+              $ref: "#/components/examples/LoginResponseDenied"
+      headers:
+        version:
+          $ref: "#/components/headers/version"
+
