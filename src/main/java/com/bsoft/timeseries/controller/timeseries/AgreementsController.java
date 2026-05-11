@@ -1,4 +1,4 @@
-package com.bsoft.timeseries.controller;
+package com.bsoft.timeseries.controller.timeseries;
 
 import com.bsoft.timeseries.service.AgreementService;
 import com.bsoft.timeseries.timeseries.api.AgreementsApi;

@@ -1,4 +1,4 @@
-package com.bsoft.timeseries.controller;
+package com.bsoft.timeseries.controller.timeseries;
 
 import com.bsoft.timeseries.service.PersonRelationService;
 import com.bsoft.timeseries.timeseries.api.PersonRelationsApi;

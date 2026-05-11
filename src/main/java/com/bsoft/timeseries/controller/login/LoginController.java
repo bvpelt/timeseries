@@ -1,4 +1,4 @@
-package com.bsoft.timeseries.controller;
+package com.bsoft.timeseries.controller.login;
 
 
 import com.bsoft.timeseries.login.api.LoginApi;
