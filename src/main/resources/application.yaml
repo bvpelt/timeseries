@@ -3,7 +3,7 @@ application:
 
 jwt:
   key: "9dd059be604f3e0b8742724eae817a49d4561fe22bf3519d10d7431dd4b188e4" # using jwtsecret.com/generate 32 bytes 256 bits
-  key-lifetime: 1000000 # ms
+  key-lifetime: 14400000 # ms; is 4 uur for testing
   basePath: "/api/v1"
 
 spring:

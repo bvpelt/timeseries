@@ -1,9 +1,6 @@
 package com.bsoft.timeseries.jwt;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +23,7 @@ public class JwtUtils {
     public JwtUtils(
             @Value("${jwt.key}") String jwtSecret,
             @Value("${jwt.key-lifetime}") long jwtExpirationMs) {
+        log.debug("JwtUtils constructor - secret: {} expiration (ms): {}", jwtSecret, jwtExpirationMs);
         this.jwtSecret = jwtSecret;
         this.jwtExpirationMs = jwtExpirationMs;
     }
@@ -84,4 +82,48 @@ public class JwtUtils {
         }
         return false;
     }
+
+    public TokenInfo decodeToken(String token) {
+        log.debug("JwtUtils - decodeToken - token: {}", token);
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) key())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            TokenInfo info = new TokenInfo(
+                    claims.getSubject(),
+                    claims.getIssuedAt(),
+                    claims.getExpiration(),
+                    claims.getIssuer(),
+                    claims
+            );
+
+            log.debug("JwtUtils - decodeToken - subject:    {}", info.subject());
+            log.debug("JwtUtils - decodeToken - issuedAt:   {}", info.issuedAt());
+            log.debug("JwtUtils - decodeToken - expiration: {}", info.expiration());
+            log.debug("JwtUtils - decodeToken - issuer:     {}", info.issuer());
+            log.debug("JwtUtils - decodeToken - expired:    {}", info.isExpired());
+            log.debug("JwtUtils - decodeToken - allClaims:  {}", info.allClaims());
+
+            return info;
+
+        } catch (ExpiredJwtException e) {
+            // Token is expired but still readable — extract claims from the exception
+            Claims claims = e.getClaims();
+            log.warn("JwtUtils - decodeToken - token is expired, claims still readable");
+            return new TokenInfo(
+                    claims.getSubject(),
+                    claims.getIssuedAt(),
+                    claims.getExpiration(),
+                    claims.getIssuer(),
+                    claims
+            );
+        } catch (Exception e) {
+            log.error("JwtUtils - decodeToken - failed to decode token: {}", e.getMessage());
+            throw new IllegalArgumentException("Cannot decode token: " + e.getMessage(), e);
+        }
+    }
+
 }

@@ -75,7 +75,7 @@ public class AuthenticationService {
         try {
             usersRepository.save(user);
         } catch (Exception e) {
-            log.error("User: {} not saved", user.getUsername());
+            log.error("AuthenticationService register - User: {} not saved", user.getUsername());
             throw new UserExistsException("User already exists based on username or email");
         }
 
@@ -86,7 +86,7 @@ public class AuthenticationService {
         loginResponse.setToken(jwtToken);
         loginResponse.setAuthenticated(true);
 
-        log.trace("AuthenticationService register - generated token: {}", jwtToken);
+        log.trace("AuthenticationService register - generated token: {}", jwtUtils.decodeToken(jwtToken));
 
         return loginResponse;
     }
@@ -113,13 +113,13 @@ public class AuthenticationService {
         loginResponse.setToken(jwtToken);
         loginResponse.setAuthenticated(true);
 
-        log.trace("AuthenticationService authenticate - generated token: {}", jwtToken);
+        log.trace("AuthenticationService authenticate - generated token: {}", jwtUtils.decodeToken(jwtToken));
 
         return loginResponse;
     }
 
     public LoginResponse basicjwt(LoginRequest loginRequest) {
-        log.debug("basicjwt loginRequest: {}", loginRequest.toString());
+        log.debug("AuthenticationService basicjwt - loginRequest: {}", loginRequest.toString());
 
         LoginResponse loginResponse = new LoginResponse();
 
@@ -130,7 +130,7 @@ public class AuthenticationService {
             MyUserPrincipal myUserPrincipal = new MyUserPrincipal(new UserEntity(user));
 
             var jwtToken = jwtUtils.generateTokenFromUsername(myUserPrincipal);
-
+            log.debug("AuthenticationService basicjwt - generated token: {}", jwtUtils.decodeToken(jwtToken));
             loginResponse.setToken(jwtToken);
         }
 
