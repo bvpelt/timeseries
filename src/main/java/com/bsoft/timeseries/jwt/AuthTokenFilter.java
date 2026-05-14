@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,9 +32,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private ApiKeyService apiKeyService;
 
+    @Value("${openapi.timeseries.base-path}")
+    private String timeseriesBasepath;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException {
-        log.trace("doFilterInternal called for method: {} URI: {}", request.getMethod(), request.getRequestURI());
+        log.trace("AuthTokenFilter - doFilterInternal - Called for method: {} URI: {}", request.getMethod(), request.getRequestURI());
 
         if (!request.getRequestURI().isEmpty()) {
             try {
@@ -47,7 +51,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
                             null,
                             userDetails.getAuthorities());
-                    log.trace("Roles from JWT: {}", userDetails.getAuthorities());
+                    log.trace("AuthTokenFilter - doFiterInternal - Roles from JWT: {}", userDetails.getAuthorities());
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -55,27 +59,26 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (Exception e) {
-                log.error("Cannot set user authentication: {}", e.toString());
+                log.error("AuthTokenFilter - doFilterInternal - Cannot set user authentication: {}", e.toString());
                 throw new ServletException(e);
             }
-
             try {
                 filterChain.doFilter(request, response);
             } catch (ServletException e) {
-                log.error("ServletException caught in filterchain: {}", e.toString());
+                log.error("AuthTokenFilter - doFilterInternal - ServletException caught in filterchain: {}", e.toString());
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                log.error("Exception caught in filterchain: {}", e.toString());
+                log.error("AuthTokenFilter - doFilterInternal - Exception caught in filterchain: {}", e.toString());
                 throw new RuntimeException(e);
             }
         } else {
-            log.error("Request URI is empty");
+            log.error("AuthTokenFilter - doFilterInternal - Request URI is empty");
         }
     }
 
     private String parseJwt(HttpServletRequest request) {
         String jwt = jwtUtils.getJwtFromHeader(request);
-        log.trace("parseJwt called for URI: {}, token: {}", request.getRequestURI(), jwt);
+        log.trace("AuthTokenFilter - parseJwt - Called for URI: {}, token: {}", request.getRequestURI(), jwt);
 
         return jwt;
     }
@@ -85,16 +88,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final String xapiHeader = request.getHeader("X-API-KEY");
 
         if (requestUri != null) {
-            log.trace("requestUri: {}", requestUri);
-            if (requestUri.startsWith("/adres/api/v1")) {
-                log.trace("requestUri match /adres/api/v1: {}", requestUri);
+            log.trace("AuthTokenFilter - checkAPIKey - requestUri: {}", requestUri);
+            if (requestUri.startsWith(timeseriesBasepath)) {
+                log.trace("AuthTokenFilter - checkAPIKey - requestUri match /adres/api/v1: {}", requestUri);
                 String refererHeader = request.getHeader("Referer");
                 String ipAddress = getClientIpAddr(request);
                 if ((xapiHeader == null) || (!apiKeyService.isValidApiKey(xapiHeader))) {
-                    log.error("doFilterInternal - No (valid) X-API-KEY, referer: {}, ipaddress: {}", (refererHeader != null ? refererHeader : ""), ipAddress);
+                    log.error("AuthTokenFilter - checkAPIKey - No (valid) X-API-KEY, referer: {}, ipaddress: {}", (refererHeader != null ? refererHeader : ""), ipAddress);
                     throw new ServletException("X-API-KEY has invalid format or is not known!");
                 }
-//                log.info("doFilterInternal - X-API-KEY, referer: {}, ipaddress: {}", (refererHeader != null ? refererHeader : ""), ipAddress);
+                log.trace("doFilterInternal - X-API-KEY, referer: {}, ipaddress: {}", (refererHeader != null ? refererHeader : ""), ipAddress);
             }
         }
     }

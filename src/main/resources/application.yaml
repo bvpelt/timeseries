@@ -4,7 +4,7 @@ application:
 jwt:
   key: "9dd059be604f3e0b8742724eae817a49d4561fe22bf3519d10d7431dd4b188e4" # using jwtsecret.com/generate 32 bytes 256 bits
   key-lifetime: 1000000 # ms
-  basePath: "/api/v2"
+  basePath: "/api/v1"
 
 spring:
   application:
@@ -95,7 +95,7 @@ springdoc:
 logging:
   level:
     root: INFO
-    com.bsoft.timeseries: DEBUG
+    com.bsoft.timeseries: TRACE
     org.springframework.security: INFO
     org.springframework.web: INFO
     org.hibernate.SQL: INFO

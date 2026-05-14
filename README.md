@@ -7,7 +7,7 @@ Prerequisit:
 See [create database](database.md)
 
 ## API
-See https://editor.swagger.io/ using [openapi spec](./src/main/resources/openapi/openapi.yaml)
+See https://editor.swagger.io/ using [openapi spec](src/main/resources/openapi/timeseries.yaml)
 
 ## Building
 

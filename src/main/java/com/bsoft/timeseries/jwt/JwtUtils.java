@@ -32,7 +32,7 @@ public class JwtUtils {
 
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        log.trace("Authorization header: {}", bearerToken);
+        log.trace("JwtUtils - getJwtFromHeader - Authorization header: {}", bearerToken);
 
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -52,6 +52,7 @@ public class JwtUtils {
     }
 
     public String getUsernameFromToken(String token) {
+        log.debug("JwtUtils - getUsernameFromToken - Token: {}", token);
         return Jwts.parser()
                 .verifyWith((SecretKey) key())
                 .build()
@@ -65,21 +66,21 @@ public class JwtUtils {
     }
 
     public boolean validateToken(String authToken) {
+        log.debug("JwtUtils - validateToken - authToken: {}", authToken);
         try {
-            log.trace("Validate token: {}", authToken);
             Jwts.parser()
                     .verifyWith((SecretKey) key())
                     .build()
                     .parseSignedClaims(authToken);
             return true;
         } catch (MalformedJwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            log.error("JwtUtils - validateToken - Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token: {}", e.getMessage());
+            log.error("JwtUtils - validateToken - Expired JWT token: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token: {}", e.getMessage());
+            log.error("JwtUtils - validateToken - Unsupported JWT token: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty: {}", e.getMessage());
+            log.error("JwtUtils - validateToken - JWT claims string is empty: {}", e.getMessage());
         }
         return false;
     }

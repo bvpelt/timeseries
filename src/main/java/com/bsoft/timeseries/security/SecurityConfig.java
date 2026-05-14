@@ -13,11 +13,15 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -50,12 +54,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    ApiKeyAuthFilter apiKeyAuthFilter)
+
             throws Exception {
+
+        http.cors(cors -> cors.configurationSource(request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:81", "http://localhost:8080", "https://editor.swagger.io/", "https://editor-next.swagger.io/"));
+            config.setAllowedMethods(List.of("*")); // Allow all HTTP methods
+            config.setAllowedHeaders(List.of("*")); // Allow all headers
+            return config;
+        }));
+
         http
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .sessionManagement(sm ->
+//                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -67,17 +81,38 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/actuator/metrics/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/timeseries/**").permitAll()
                         //.hasAnyAuthority("ADMIN", "READ", "READ_WRITE")
                         .requestMatchers(HttpMethod.POST, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/privileges").hasAnyAuthority( "APP_WRITE", "APP_MAINTENANCE")
                         .requestMatchers("/actuator/**", "/admin/api-keys").permitAll() //.hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable);
+//                .formLogin(AbstractHttpConfigurer::disable)
+//                .httpBasic(AbstractHttpConfigurer::disable)
+        ;
+
+        http.sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // create new session for each request
+
+        // add exception handler
+        http.exceptionHandling(exception -> {
+            exception.authenticationEntryPoint(unauthorizedHandler);
+        });
+
+        // enable basic authentication
+  //      http.httpBasic(Customizer.withDefaults());
+
+        http.headers(headers ->
+                headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+
+        http.csrf(AbstractHttpConfigurer::disable);
+
+        http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

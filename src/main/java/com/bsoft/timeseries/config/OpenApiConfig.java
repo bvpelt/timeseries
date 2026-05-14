@@ -1,21 +1,18 @@
 package com.bsoft.timeseries.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Configures SpringDoc to expose the hand-crafted OpenAPI YAML file
- * and registers the API-key security scheme so the Swagger UI
- * "Authorize" button works out of the box.
- */
 @Configuration
-public class OpenApiConfig implements WebMvcConfigurer {
-
+public class OpenApiConfig {
     @Value("${openapi.timeseries.base-path}")
     private String timeseriesBasepath;
 
@@ -25,12 +22,52 @@ public class OpenApiConfig implements WebMvcConfigurer {
     @Value("${openapi.auth.base-path}")
     private String authBasepath;
 
+
+    // ─── Security scheme names ────────────────────────────────────────────────
+
+    private static final String API_KEY_SCHEME  = "ApiKeyAuth";
+    private static final String BEARER_SCHEME   = "bearerAuth";
+
+    // ─── Global OpenAPI bean ──────────────────────────────────────────────────
+
+    @Bean
+    public OpenAPI globalOpenApiInfo() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Timeseries Service")
+                        .description("Bitemporal person, address and agreement management")
+                        .version("1.0.0")
+                        .contact(new Contact()
+                                .name("BSoft Development Team")))
+
+                // Register both security schemes so the Authorize button works
+                .components(new Components()
+                        .addSecuritySchemes(API_KEY_SCHEME,
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .name("X-API-Key")
+                                        .description("API key — READ, READ_WRITE or ADMIN"))
+                        .addSecuritySchemes(BEARER_SCHEME,
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                                        .description("JWT token obtained from /login")))
+
+                // Apply both globally — individual operations can override
+                .addSecurityItem(new SecurityRequirement().addList(API_KEY_SCHEME))
+                .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME));
+    }
+
+    // ─── Groups ───────────────────────────────────────────────────────────────
+
     @Bean
     public GroupedOpenApi timeseriesApi() {
         return GroupedOpenApi.builder()
                 .group("timeseries")
                 .displayName("Bitemporal Person-Address-Agreement API")
-                .pathsToMatch(timeseriesBasepath + "/**")   // matches all timeseries endpoints
+                .pathsToMatch(timeseriesBasepath + "/**")
                 .build();
     }
 
@@ -39,7 +76,7 @@ public class OpenApiConfig implements WebMvcConfigurer {
         return GroupedOpenApi.builder()
                 .group("login")
                 .displayName("Login API")
-                .pathsToMatch(loginBasepath + "/**")   // adjust to match your login.yaml paths
+                .pathsToMatch(loginBasepath + "/**")
                 .build();
     }
 
@@ -48,16 +85,7 @@ public class OpenApiConfig implements WebMvcConfigurer {
         return GroupedOpenApi.builder()
                 .group("authentication")
                 .displayName("Authentication API")
-                .pathsToMatch(authBasepath + "/**")    // adjust to match your authentication.yaml paths
+                .pathsToMatch(authBasepath + "/**")
                 .build();
-    }
-
-    @Bean
-    public OpenAPI globalOpenApiInfo() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Timeseries Service")
-                        .description("Bitemporal person, address and agreement management")
-                        .version("1.0.0"));
     }
 }

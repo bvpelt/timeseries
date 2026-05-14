@@ -27,9 +27,9 @@ public class MyUserPrincipal implements UserDetails {
 
         user.getRoles().forEach(role -> {
 
-            log.trace("get role: {}", role.getRolename());
+            log.trace("MyUserPrincipal - getAuthorities - get role: {}", role.getRolename());
             role.getPrivileges().forEach(principle -> {
-                log.trace("get principle: {}", principle.getName());
+                log.trace("MyUserPrincipal - getAuthorities - get principle: {}", principle.getName());
                 authorities.add(new SimpleGrantedAuthority(principle.getName()));
             });
         });
