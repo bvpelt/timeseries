@@ -13,20 +13,17 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
+    private static final String API_KEY_SCHEME = "ApiKeyAuth";
+    private static final String BEARER_SCHEME = "bearerAuth";
     @Value("${openapi.timeseries.base-path}")
     private String timeseriesBasepath;
 
-    @Value("${openapi.login.base-path}")
-    private String loginBasepath;
-
-    @Value("${openapi.auth.base-path}")
-    private String authBasepath;
-
 
     // ─── Security scheme names ────────────────────────────────────────────────
-
-    private static final String API_KEY_SCHEME  = "ApiKeyAuth";
-    private static final String BEARER_SCHEME   = "bearerAuth";
+    @Value("${openapi.login.base-path}")
+    private String loginBasepath;
+    @Value("${openapi.auth.base-path}")
+    private String authBasepath;
 
     // ─── Global OpenAPI bean ──────────────────────────────────────────────────
 

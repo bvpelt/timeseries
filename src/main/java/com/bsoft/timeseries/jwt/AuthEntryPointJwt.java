@@ -1,7 +1,6 @@
 package com.bsoft.timeseries.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +10,17 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .findAndRegisterModules();
+
+    /*
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         log.error("AuthEntryPointJwt - commence - Unauthorized access error: {}", authException.getMessage());
@@ -34,4 +37,26 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(response.getOutputStream(), body);
     }
+     */
+
+    @Override
+    public void commence(HttpServletRequest request,
+                         HttpServletResponse response,
+                         AuthenticationException authException) throws IOException {
+
+        log.warn("AuthEntryPointJwt - unauthorized: uri={} error={}",
+                request.getRequestURI(), authException.getMessage());
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        objectMapper.writeValue(response.getOutputStream(), Map.of(
+                "status", 401,
+                "error", "Unauthorized",
+                "message", "Missing or invalid JWT token",
+                "timestamp", OffsetDateTime.now().toString()
+        ));
+    }
+
+
 }

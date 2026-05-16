@@ -31,9 +31,6 @@ servers:
   - url: "https://api.example.com/api/v1"
     description: "Production server"
 
-security:
-  - ApiKeyAuth: [ ]
-
 tags:
   - name: persons
     description: Person management with bitemporal support
@@ -48,11 +45,13 @@ paths:
 
   # ==================== PERSONS ====================
   /persons:
+
     get:
       tags: [ persons ]
       operationId: listPersons
       summary: List persons at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -74,6 +73,9 @@ paths:
       tags: [ persons ]
       operationId: createPerson
       summary: Create a new person
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -94,14 +96,17 @@ paths:
         '403':
           $ref: './common.yaml#/components/responses/Forbidden'
 
+
   /persons/{personId}:
     parameters:
       - $ref: '#/components/parameters/PersonId'
+
     get:
       tags: [ persons ]
       operationId: getPerson
       summary: Get a person at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -123,6 +128,9 @@ paths:
       tags: [ persons ]
       operationId: updatePerson
       summary: Update a person (creates a new transaction-time version)
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -149,6 +157,9 @@ paths:
       tags: [ persons ]
       operationId: terminatePerson
       summary: Terminate the valid period of a person
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       description: Ends the person's valid period. The record is preserved in transaction time for auditing.
       parameters:
         - name: validTo
@@ -168,14 +179,17 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /persons/{personId}/history:
     parameters:
       - $ref: '#/components/parameters/PersonId'
+
     get:
       tags: [ persons ]
       operationId: getPersonHistory
       summary: Get the complete bitemporal history of a person
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       description: Returns all versions across both valid time and transaction time.
       responses:
         '200':
@@ -193,14 +207,17 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /persons/{personId}/addresses:
     parameters:
       - $ref: '#/components/parameters/PersonId'
+
     get:
       tags: [ person-relations ]
       operationId: getPersonAddresses
       summary: Get addresses linked to a person at a given bitemporal point
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -224,6 +241,9 @@ paths:
       tags: [ person-relations ]
       operationId: addPersonAddress
       summary: Link an address to a person
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -248,14 +268,19 @@ paths:
         '409':
           $ref: './common.yaml#/components/responses/Conflict'
 
+
   /persons/{personId}/addresses/{addressId}:
     parameters:
       - $ref: '#/components/parameters/PersonId'
       - $ref: '#/components/parameters/AddressId'
+
     delete:
       tags: [ person-relations ]
       operationId: removePersonAddress
       summary: Terminate a person-address relation
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       parameters:
         - name: validTo
           in: query
@@ -274,14 +299,17 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /persons/{personId}/agreements:
     parameters:
       - $ref: '#/components/parameters/PersonId'
+
     get:
       tags: [ person-relations ]
       operationId: getPersonAgreements
       summary: Get agreements linked to a person at a given bitemporal point
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -305,6 +333,9 @@ paths:
       tags: [ person-relations ]
       operationId: addPersonAgreement
       summary: Link an agreement to a person
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -327,14 +358,19 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /persons/{personId}/agreements/{agreementId}:
     parameters:
       - $ref: '#/components/parameters/PersonId'
       - $ref: '#/components/parameters/AgreementId'
+
     delete:
       tags: [ person-relations ]
       operationId: removePersonAgreement
       summary: Terminate a person-agreement relation
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       parameters:
         - name: validTo
           in: query
@@ -354,11 +390,13 @@ paths:
 
   # ==================== ADDRESSES ====================
   /addresses:
+
     get:
       tags: [ addresses ]
       operationId: listAddresses
       summary: List addresses at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -380,6 +418,9 @@ paths:
       tags: [ addresses ]
       operationId: createAddress
       summary: Create a new address
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -400,14 +441,17 @@ paths:
         '403':
           $ref: './common.yaml#/components/responses/Forbidden'
 
+
   /addresses/{addressId}:
     parameters:
       - $ref: '#/components/parameters/AddressId'
+
     get:
       tags: [ addresses ]
       operationId: getAddress
       summary: Get an address at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -429,6 +473,9 @@ paths:
       tags: [ addresses ]
       operationId: updateAddress
       summary: Update an address (creates a new transaction-time version)
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -455,6 +502,9 @@ paths:
       tags: [ addresses ]
       operationId: terminateAddress
       summary: Terminate the valid period of an address
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       parameters:
         - name: validTo
           in: query
@@ -472,14 +522,17 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /addresses/{addressId}/history:
     parameters:
       - $ref: '#/components/parameters/AddressId'
+
     get:
       tags: [ addresses ]
       operationId: getAddressHistory
       summary: Get the complete bitemporal history of an address
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       responses:
         '200':
           description: Full bitemporal history
@@ -498,11 +551,13 @@ paths:
 
   # ==================== AGREEMENTS ====================
   /agreements:
+
     get:
       tags: [ agreements ]
       operationId: listAgreements
       summary: List agreements at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -524,6 +579,9 @@ paths:
       tags: [ agreements ]
       operationId: createAgreement
       summary: Create a new agreement
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -544,14 +602,17 @@ paths:
         '403':
           $ref: './common.yaml#/components/responses/Forbidden'
 
+
   /agreements/{agreementId}:
     parameters:
       - $ref: '#/components/parameters/AgreementId'
+
     get:
       tags: [ agreements ]
       operationId: getAgreement
       summary: Get an agreement at a given bitemporal point in time
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       parameters:
         - $ref: '#/components/parameters/ValidAt'
         - $ref: '#/components/parameters/TransactionAt'
@@ -573,6 +634,9 @@ paths:
       tags: [ agreements ]
       operationId: updateAgreement
       summary: Update an agreement (creates a new transaction-time version)
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       requestBody:
         required: true
         content:
@@ -599,6 +663,9 @@ paths:
       tags: [ agreements ]
       operationId: terminateAgreement
       summary: Terminate the valid period of an agreement
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]    # JWT required for mutations
       parameters:
         - name: validTo
           in: query
@@ -616,14 +683,17 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /agreements/{agreementId}/history:
     parameters:
       - $ref: '#/components/parameters/AgreementId'
+
     get:
       tags: [ agreements ]
       operationId: getAgreementHistory
       summary: Get the complete bitemporal history of an agreement
-      security: [ ]
+      security:
+        - ApiKeyAuth: [ ]
       responses:
         '200':
           description: Full bitemporal history
@@ -641,17 +711,6 @@ paths:
           $ref: './common.yaml#/components/responses/NotFound'
 
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-      description: |
-        API key for authentication. Three permission levels:
-        - READ_WRITE: full CRUD access
-        - READ: read-only (GET) access
-        - ADMIN: management/full access
-        - NO_ACCESS: all requests denied (key is revoked)
 
   parameters:
     PersonId:
@@ -1076,3 +1135,20 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Three permission levels:
+        - READ_WRITE: full CRUD access
+        - READ: read-only (GET) access
+        - ADMIN: management/full access
+        - NO_ACCESS: all requests denied (key is revoked)
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -30,6 +30,7 @@ tags:
 paths:
 
   /login/user:
+
     post:
       tags:
         - Login
@@ -60,7 +61,9 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /login/jwt/authenticate:
+
     post:
       tags:
         - Login
@@ -92,6 +95,7 @@ paths:
 
 
   /login/jwt/register:
+
     post:
       tags:
         - Login

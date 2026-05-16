@@ -45,4 +45,11 @@ public class ApiKeyService {
         apiKey.setKeyValue(randomKey);
         return apiKey;
     }
+
+    public Optional<String> resolveOwner(String keyValue) {
+        return repository.findByKeyValueAndActiveTrue(keyValue)
+                .filter(k -> k.getExpiresAt() == null
+                        || k.getExpiresAt().isAfter(OffsetDateTime.now()))
+                .map(ApiKeyEntity::getOwner);   // returns owner name for logging
+    }
 }

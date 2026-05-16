@@ -1,8 +1,13 @@
 package com.bsoft.timeseries.security;
 
+
 import com.bsoft.timeseries.jwt.AuthEntryPointJwt;
-import com.bsoft.timeseries.jwt.AuthTokenFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import com.bsoft.timeseries.jwt.JwtUtils;
+import com.bsoft.timeseries.security.filters.ApiKeyLoggingFilter;
+import com.bsoft.timeseries.security.filters.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -13,106 +18,128 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
+    private final AuthEntryPointJwt authEntryPoint;
+
+    // ─── Beans ───────────────────────────────────────────────────────────────
 
     @Bean
-    public ApiKeyAuthFilter apiKeyAuthFilter(@Lazy ApiKeyService apiKeyService) {
-        return new ApiKeyAuthFilter(apiKeyService);
+    public ApiKeyLoggingFilter apiKeyLoggingFilter(
+            @Lazy ApiKeyService apiKeyService,
+            ObjectMapper objectMapper) {          // ← Spring auto-configures this
+        return new ApiKeyLoggingFilter(apiKeyService, objectMapper);
     }
 
     @Bean
-    public AuthTokenFilter jwtTokenFilter() {
-        return new AuthTokenFilter();
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtUtils jwtUtils,
+            UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtils, userDetailsService);
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
-        return builder.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(); // suppresses auto-generated password
+        // Replaced by your real UserDetailsService (DB-backed) at runtime.
+        // This bean only suppresses the auto-generated password warning.
+        return new InMemoryUserDetailsManager();
     }
 
+    // ─── Filter chain ─────────────────────────────────────────────────────────
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   ApiKeyAuthFilter apiKeyAuthFilter)
-
-            throws Exception {
-
-        http.cors(cors -> cors.configurationSource(request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:81", "http://localhost:8080", "https://editor.swagger.io/", "https://editor-next.swagger.io/"));
-            config.setAllowedMethods(List.of("*")); // Allow all HTTP methods
-            config.setAllowedHeaders(List.of("*")); // Allow all headers
-            return config;
-        }));
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            ApiKeyLoggingFilter apiKeyLoggingFilter,
+            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 
         http
-//                .sessionManagement(sm ->
-//                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // ── Stateless REST: no sessions, no CSRF ──────────────────────
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // ── CORS ──────────────────────────────────────────────────────
+                .cors(cors -> cors.configurationSource(request -> {
+                    var config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of(
+                            "http://localhost:4200",
+                            "http://localhost:8080"
+                    ));
+                    config.setAllowedMethods(List.of("*"));
+                    config.setAllowedHeaders(List.of("*"));
+                    return config;
+                }))
+
+                // ── Filters: logging first, then JWT ──────────────────────────
+                .addFilterBefore(apiKeyLoggingFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+
+                // ── 401 handler ───────────────────────────────────────────────
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(authEntryPoint))
+
+                // ── Authorization rules ───────────────────────────────────────
                 .authorizeHttpRequests(auth -> auth
+
+                        // Public infrastructure
                         .requestMatchers(
                                 "/",
+                                "/sw.js",                    // service worker
+                                "/favicon.ico",              // browser favicon request
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
-                                "/api/v1/login/**",
                                 "/webjars/**",
-                                "/actuator/metrics/**"
+                                "/actuator/health"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/timeseries/**").permitAll()
-                        //.hasAnyAuthority("ADMIN", "READ", "READ_WRITE")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/timeseries/**").hasAnyAuthority("ADMIN", "READ_WRITE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/privileges").hasAnyAuthority( "APP_WRITE", "APP_MAINTENANCE")
+                        // Login endpoints — no JWT needed (they produce the token)
+                        .requestMatchers("/api/v1/login/**").permitAll()
+
+                        // Timeseries GET — open to anyone
+                        .requestMatchers(HttpMethod.GET, "/api/v1/timeseries/**").permitAll()
+                        // Timeseries mutations — JWT required
+                        .requestMatchers(HttpMethod.POST, "/api/v1/timeseries/**").hasAnyAuthority("ALL", "APP_WRITE", "APP_MAINTENANCE")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/timeseries/**").hasAnyAuthority("ALL", "APP_WRITE", "APP_MAINTENANCE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/timeseries/**").hasAnyAuthority("ALL", "APP_WRITE", "APP_MAINTENANCE")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/timeseries/**").hasAnyAuthority("ALL", "APP_WRITE", "APP_MAINTENANCE")
+
+                        // Auth management — JWT + specific role required
+                        .requestMatchers("/api/v1/auth/**").hasAnyAuthority("ALL", "APP_MAINTENANCE")
+
+                        // Actuator
                         .requestMatchers("/actuator/**", "/admin/api-keys").permitAll() //.hasAuthority("ADMIN")
+
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
-//                .formLogin(AbstractHttpConfigurer::disable)
-//                .httpBasic(AbstractHttpConfigurer::disable)
-        ;
 
-        http.sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // create new session for each request
-
-        // add exception handler
-        http.exceptionHandling(exception -> {
-            exception.authenticationEntryPoint(unauthorizedHandler);
-        });
-
-        // enable basic authentication
-  //      http.httpBasic(Customizer.withDefaults());
-
-        http.headers(headers ->
-                headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
-
-        http.csrf(AbstractHttpConfigurer::disable);
-
-        http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
     }

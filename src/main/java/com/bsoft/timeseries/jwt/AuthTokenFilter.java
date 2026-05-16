@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,12 +15,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
-@Component
-public class AuthTokenFilter extends OncePerRequestFilter {
+//@Component
+public class AuthTokenFilter {// extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -35,7 +32,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Value("${openapi.timeseries.base-path}")
     private String timeseriesBasepath;
 
-    @Override
+    //  @Override
     protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException {
         log.trace("AuthTokenFilter - doFilterInternal - Called for method: {} URI: {}", request.getMethod(), request.getRequestURI());
 
@@ -78,7 +75,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private String parseJwt(HttpServletRequest request) {
         String jwt = jwtUtils.getJwtFromHeader(request);
-        if (jwt !=null) {
+        if (jwt != null) {
             log.trace("AuthTokenFilter - parseJwt - Called for URI: {}, token: {}", request.getRequestURI(), jwt);
         }
         return jwt;

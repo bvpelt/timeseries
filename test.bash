@@ -3,7 +3,7 @@
 set -euo pipefail
 
 BASE_URL="http://localhost:8080/api/v1"
-API_KEY="bvpelt"
+API_KEY="2de01979-3ea6-4f18-a7a9-b065f25b252c"
 TOKEN_FILE="${PWD}/.timeseries_token"
 
 # ─── HELPER ──────────────────────────────────────────────────────────────────
@@ -150,9 +150,11 @@ list_persons() {
 
 create_person() {
     echo "=== CREATE PERSON ==="
+    require_token
     run curl -s -X POST "${BASE_URL}/timeseries/persons" \
         -H "accept: application/json" \
         -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${TOKEN}" \
         -H "X-API-Key: ${API_KEY}" \
         -d '{
             "firstName": "Bart",

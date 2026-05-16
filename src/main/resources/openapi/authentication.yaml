@@ -23,9 +23,6 @@ servers:
       basePath:
         default: "/api/auth/v1"
 
-security:
-  - bearerAuth: [ ]
-
 tags:
   - name: Roles
     description: "The roles a user can have"
@@ -34,11 +31,16 @@ tags:
       The users who have special access
 
 paths:
+
   /privileges:
+
     get:
       tags:
         - Privileges
       summary: Retrieve all known privileges
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve all known privileges, using paging and sorting
       operationId: getPrivileges
@@ -58,11 +60,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     delete:
       tags:
         - Privileges
       summary: Delete all privileges
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete all privileges
       operationId: deleteAllPrivileges
@@ -82,6 +86,9 @@ paths:
       tags:
         - Privileges
       summary: Create a new privilege
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Create a new privileges
         To determine if an privileges is new the input is compared on the hash value of:
@@ -109,11 +116,16 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
+
   /privileges/{id}:
+
     get:
       tags:
         - Privileges
       summary: Retrieve the specified privilege
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve only one privilege with id privilegeId
       operationId: getPrivilege
@@ -131,11 +143,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     delete:
       tags:
         - Privileges
       summary: Delete the specified privilege
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete only the specified privilege
       operationId: deletePrivilege
@@ -153,11 +167,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     patch:
       tags:
         - Privileges
       summary: Update the specified privilege
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Update only the privilege specified with privilegeId
       operationId: patchPrivilege
@@ -186,10 +202,14 @@ paths:
 
 
   /roles:
+
     get:
       tags:
         - Roles
       summary: Retrieve all known roles
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve all known roles, using paging and sorting
       operationId: getRoles
@@ -209,11 +229,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     delete:
       tags:
         - Roles
       summary: Delete all roles
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete all roles
       operationId: deleteAllRoles
@@ -229,11 +251,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     post:
       tags:
         - Roles
       summary: Create a new role
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Create a new role
         To determine if an role is new the input is compared on the hash value of:
@@ -264,10 +288,14 @@ paths:
 
 
   /roles/{id}:
+
     get:
       tags:
         - Roles
       summary: Retrieve the specified role
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve only one role with id roleId
       operationId: getRole
@@ -285,11 +313,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     delete:
       tags:
         - Roles
       summary: Delete the specified role
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete only the specified role
       operationId: deleteRole
@@ -307,11 +337,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     patch:
       tags:
         - Roles
       summary: Update the specified role
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Update only the role specified with roleId
       operationId: patchRole
@@ -340,10 +372,14 @@ paths:
 
 
   /users:
+
     get:
       tags:
         - Users
       summary: Retrieve all known users
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve all known users, using paging and sorting
       operationId: getUsers
@@ -362,10 +398,14 @@ paths:
           $ref: './common.yaml#/components/responses/Forbidden'
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
+
     delete:
       tags:
         - Users
       summary: Delete all
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete all users
       operationId: deleteAllUsers
@@ -381,11 +421,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     post:
       tags:
         - Users
       summary: Create a new user
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Create a new user
         To determine if an user is new the input is compared on the hash value of:
@@ -418,10 +460,14 @@ paths:
 
 
   /users/{id}:
+
     get:
       tags:
         - Users
       summary: Retrieve the specified user
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Retrieve only one user with id userId
       operationId: getUser
@@ -443,6 +489,9 @@ paths:
       tags:
         - Users
       summary: Delete the specified user
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Delete only the specified user
       operationId: deleteUser
@@ -460,11 +509,13 @@ paths:
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
 
-
     patch:
       tags:
         - Users
       summary: Update the specified user
+      security:
+        - ApiKeyAuth: [ ]
+        - bearerAuth: [ ]
       description: |
         Update only the user specified with userId
       operationId: patchUser
@@ -1106,6 +1157,17 @@ components:
           $ref: "#/components/headers/version"
 
   securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Three permission levels:
+        - READ_WRITE: full CRUD access
+        - READ: read-only (GET) access
+        - ADMIN: management/full access
+        - NO_ACCESS: all requests denied (key is revoked)
+
     bearerAuth:
       type: http
       scheme: bearer

@@ -82,7 +82,7 @@ springdoc:
     tagsSorter: alpha
     try-it-out-enabled: true
     disable-swagger-default-url: false
-  # Point to the hand-crafted spec, not the auto-generated one
+    # Point to the hand-crafted spec, not the auto-generated one
     urls:
       - name: timeseries
         url: /v3/api-docs/timeseries
@@ -95,11 +95,12 @@ springdoc:
 logging:
   level:
     root: INFO
+    org.flywaydb: INFO
     com.bsoft.timeseries: TRACE
     org.springframework.security: INFO
     org.springframework.web: INFO
     org.hibernate.SQL: INFO
-    org.flywaydb: INFO
+
 management:
   endpoint:
     env:
@@ -159,7 +160,7 @@ app:
 
 info:
   project:
-    name: ${spring.application.name}
+    name: ${spring.application.name:default}
     version: @project.version@
     description: @project.description@
   environment: ${spring.profiles.active}
