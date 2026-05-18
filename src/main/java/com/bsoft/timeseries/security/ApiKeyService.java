@@ -21,13 +21,6 @@ public class ApiKeyService {
 
     private final ApiKeyRepository repository;
 
-    public Optional<String> resolvePermission(String keyValue) {
-        return repository.findByKeyValueAndActiveTrue(keyValue)
-                .filter(k -> k.getExpiresAt() == null
-                        || k.getExpiresAt().isAfter(OffsetDateTime.now()))
-                .map(ApiKeyEntity::getPermission);
-    }
-
     public boolean isValidApiKey(String apiKey) {
         if (!apiKey.matches(API_KEY_PATTERN)) {
             return false;

@@ -1,12 +1,16 @@
 package com.bsoft.timeseries.service;
 
+import com.bsoft.timeseries.authentication.model.Role;
 import com.bsoft.timeseries.authentication.model.User;
 import com.bsoft.timeseries.authentication.model.UserBody;
+import com.bsoft.timeseries.entity.RolesEntity;
 import com.bsoft.timeseries.entity.UserEntity;
 import com.bsoft.timeseries.exception.UserExistsException;
 import com.bsoft.timeseries.exception.UserNotExistsException;
 import com.bsoft.timeseries.mapper.UserMapper;
+import com.bsoft.timeseries.repository.RoleRepository;
 import com.bsoft.timeseries.repository.UsersRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,9 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,6 +28,9 @@ public class UsersService {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private UserMapper userMapper;
@@ -177,14 +183,51 @@ public class UsersService {
             // set new hash -- assumption is at least one field is changed, no need to check!
             foundUser.setHash(foundUser.genHash());
 
-            usersRepository.save(foundUser);
+            UserEntity savedUser = usersRepository.save(foundUser);
+            updateUserRoles(savedUser, userBody);
 
-            return userMapper.map(foundUser);
+            return userMapper.map(savedUser);
         } catch (Error e) {
             log.error("Error patching adres: {}", e.toString());
             throw e;
         }
 
+    }
+
+    private void updateUserRoles(UserEntity savedUser, UserBody userBody) {
+        List<Role> currentRoles = userBody.getRoles();
+        Collection<RolesEntity> foundRoles = savedUser.getRoles();
+
+        // Extract IDs from both sides for comparison
+        Set<Long> currentRoleIds = currentRoles.stream()
+                .map(Role::getId)
+                .collect(Collectors.toSet());
+
+        Set<Long> foundRoleIds = foundRoles.stream()
+                .map(RolesEntity::getId)
+                .collect(Collectors.toSet());
+
+        // Only update if the sets actually differ
+        if (!currentRoleIds.equals(foundRoleIds)) {
+            log.debug("updateUserRoles - roles changed: found={} current={}", foundRoleIds, currentRoleIds);
+
+            // Verify all requested roles exist in the database — fail fast if not
+            List<RolesEntity> resolvedRoles = currentRoleIds.stream()
+                    .map(id -> roleRepository.findById(id)
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "Role not found with id: " + id)))
+                    .toList();
+
+            // Replace the collection in-place so JPA tracks the change
+            savedUser.getRoles().clear();
+            savedUser.getRoles().addAll(resolvedRoles);
+
+            usersRepository.save(savedUser);
+            log.debug("updateUserRoles - updated roles for user={} to={}",
+                    savedUser.getUsername(), currentRoleIds);
+        } else {
+            log.debug("updateUserRoles - roles unchanged for user={}", savedUser.getUsername());
+        }
     }
 
 }

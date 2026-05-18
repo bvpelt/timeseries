@@ -25,9 +25,6 @@ public class ApiKeyEntity {
     private String owner;
 
     @Column(nullable = false)
-    private String permission;   // READ, READ_WRITE, NO_ACCESS
-
-    @Column(nullable = false)
     private boolean active;
 
     @Column(name = "expires_at")

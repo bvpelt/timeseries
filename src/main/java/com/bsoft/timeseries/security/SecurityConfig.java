@@ -51,11 +51,17 @@ public class SecurityConfig {
             UserDetailsService userDetailsService) {
         return new JwtAuthenticationFilter(jwtUtils, userDetailsService);
     }
-
+/*
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+ */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
+        return builder.getAuthenticationManager();
     }
 
     @Bean

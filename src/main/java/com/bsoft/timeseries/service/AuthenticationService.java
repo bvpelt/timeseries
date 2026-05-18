@@ -2,6 +2,7 @@ package com.bsoft.timeseries.service;
 
 
 import com.bsoft.timeseries.authentication.model.User;
+import com.bsoft.timeseries.entity.ApiKeyEntity;
 import com.bsoft.timeseries.entity.RolesEntity;
 import com.bsoft.timeseries.entity.UserEntity;
 import com.bsoft.timeseries.exception.InvalidUserException;
@@ -9,8 +10,10 @@ import com.bsoft.timeseries.exception.UserExistsException;
 import com.bsoft.timeseries.jwt.JwtUtils;
 import com.bsoft.timeseries.login.model.LoginRequest;
 import com.bsoft.timeseries.login.model.LoginResponse;
+import com.bsoft.timeseries.repository.ApiKeyRepository;
 import com.bsoft.timeseries.repository.RoleRepository;
 import com.bsoft.timeseries.repository.UsersRepository;
+import com.bsoft.timeseries.security.MyUserDetailsService;
 import com.bsoft.timeseries.security.MyUserPrincipal;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -34,6 +39,9 @@ public class AuthenticationService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private ApiKeyRepository apiKeyRepository;
 
     @Autowired
     private UsersService usersService;
@@ -64,6 +72,18 @@ public class AuthenticationService {
             defRole = roleRepository.save(rolesDTO);
         }
 
+        var apikey = new ApiKeyEntity();
+        ApiKeyEntity savedApiKeyEntity = null;
+        apikey.setKeyValue(UUID.randomUUID().toString());
+        apikey.setOwner(request.getUsername());
+        apikey.setActive(true);
+        try {
+            savedApiKeyEntity = apiKeyRepository.save(apikey);
+        } catch (Exception e) {
+            log.error("AuthenticationService register - apikey for user: {} not saved", apikey.getOwner());
+            throw new UserExistsException("Problem saving apikey for user: " + apikey.getOwner());
+        }
+
         var user = new UserEntity();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -71,6 +91,7 @@ public class AuthenticationService {
         user.getRoles().add(defRole);
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
+        user.setApiKey(savedApiKeyEntity);
         user.genHash();
         try {
             usersRepository.save(user);
@@ -92,30 +113,7 @@ public class AuthenticationService {
     }
 
     public LoginResponse authenticate(LoginRequest request) {
-
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-            );
-        } catch (AuthenticationException e) {
-            log.error("Authentication failed for user: {}", request.getUsername());
-            throw new InvalidUserException("Authentication failed for user: " + request.getUsername());
-        }
-
-        var user = usersRepository
-                .findByUserName(request.getUsername())
-                .orElseThrow();
-
-        MyUserPrincipal myUserPrincipal = new MyUserPrincipal(user);
-
-        var jwtToken = jwtUtils.generateTokenFromUsername(myUserPrincipal);
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setAuthenticated(true);
-
-        log.trace("AuthenticationService authenticate - generated token: {}", jwtUtils.decodeToken(jwtToken));
-
-        return loginResponse;
+        return basicjwt(request);
     }
 
     public LoginResponse basicjwt(LoginRequest loginRequest) {
